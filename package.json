@@ -1,0 +1,39 @@
+{
+  "name": "openframe",
+  "version": "0.1.0",
+  "private": true,
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "dev": "pnpm --filter @openframe/web dev",
+    "build": "pnpm --filter @openframe/web build",
+    "start": "pnpm --filter @openframe/web start",
+    "lint": "pnpm --filter @openframe/web lint",
+    "lint:strict": "pnpm --filter @openframe/web lint:strict",
+    "test": "pnpm --filter @openframe/web test",
+    "test:watch": "pnpm --filter @openframe/web test:watch",
+    "test:e2e": "pnpm --filter @openframe/web test:e2e",
+    "ci:check": "pnpm --filter @openframe/web test && pnpm --filter @openframe/web build",
+    "db:generate": "pnpm --filter @openframe/web db:generate",
+    "db:migrate": "pnpm --filter @openframe/web db:migrate",
+    "db:push": "pnpm --filter @openframe/web db:push",
+    "db:studio": "pnpm --filter @openframe/web db:studio",
+    "changeset": "changeset",
+    "version-packages": "changeset version",
+    "release-packages": "changeset publish"
+  },
+  "devDependencies": {
+    "@changesets/cli": "^2.31.0",
+    "vitest": "^4.1.5"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "better-sqlite3",
+      "esbuild",
+      "sharp",
+      "unrs-resolver"
+    ]
+  },
+  "packageManager": "pnpm@10.33.2"
+}

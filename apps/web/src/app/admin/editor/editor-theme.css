@@ -1,0 +1,907 @@
+/**
+ * OpenFrame editor chrome — colors via CSS variables + .ec-* classes.
+ * Scope: [data-editor-chrome] on the editor root (see EditorApp).
+ * Use plain CSS for colors (avoid Tailwind arbitrary var utilities in comments here).
+ * Override: change variables below, or restyle .ec-* rules.
+ */
+[data-editor-chrome] {
+  /* Surfaces — stepped so regions read as distinct (not one black blob) */
+  --editor-bg: #0a0b0f;
+  --editor-canvas: #12151a;
+  --editor-header-bg: #0a0c0f;
+  --editor-surface: #1a1d24;
+  --editor-surface-muted: #22252e;
+  --editor-surface-raised: #2a2d38;
+  --editor-surface-inset: #15181d;
+
+  /* Borders — visible on dark backgrounds */
+  --editor-border: #343b4a;
+  --editor-border-strong: #4b4f63;
+  --editor-border-subtle: #2e343d;
+  --editor-border-dashed: #4b4f63;
+
+  /* Text */
+  --editor-text: #ecedf1;
+  --editor-text-secondary: #c4c8d0;
+  --editor-text-muted: #8b919e;
+  --editor-text-faint: #6a707d;
+  --editor-text-label: #7c8390;
+
+  /* Accent */
+  --editor-accent: #58b4ff;
+  --editor-accent-hover: #46a0ea;
+  --editor-accent-text: #b5cefd;
+  --editor-accent-muted: rgba(181, 212, 253, 0.92);
+  --editor-accent-surface: rgba(92, 146, 246, 0.18);
+  --editor-accent-surface-hover: rgba(92, 156, 246, 0.26);
+  --editor-accent-border: rgba(139, 176, 250, 0.45);
+  --editor-accent-focus: rgba(139, 174, 250, 0.85);
+  --editor-accent-ring: rgba(92, 125, 246, 0.45);
+  --editor-on-accent: #fafafa;
+
+  /* Controls */
+  --editor-input-bg: #12121a;
+  --editor-input-border: #4b4b63;
+  --editor-input-text: #ececf1;
+  --editor-button-secondary-bg: #1f1f2a;
+  --editor-button-secondary-border: #4b4b63;
+  --editor-button-secondary-text: #e4e4ef;
+  --editor-button-secondary-hover-bg: #2e2e3d;
+  --editor-button-secondary-hover-border: #6c6c82;
+  --editor-nav-hover-bg: #2a2a38;
+  --editor-nav-hover-text: #d4d4e0;
+
+  /* Tree */
+  --editor-tree-hover-bg: #2e2e3d;
+  --editor-tree-hover-text: #ececf1;
+  --editor-tree-type-idle: #6a6a7d;
+
+  /* Preview embed (page content stays light) */
+  --editor-preview-bg: #f4f4f5;
+  --editor-preview-border: #4b4b63;
+
+  /* Semantic */
+  --editor-error-bg: rgb(69 10 10 / 0.55);
+  --editor-error-border: rgb(185 28 28 / 0.45);
+  --editor-error-text: #fecaca;
+  --editor-warning-bg: rgb(245 158 11 / 0.2);
+  --editor-warning-text: #fcd34d;
+  --editor-danger-text: rgb(251 113 133 / 0.98);
+  --editor-danger-hover-text: #fecdd3;
+  --editor-caution-text: rgb(253 224 71 / 0.95);
+  --editor-caution-code: #fde047;
+  --editor-code-bg: #12121a;
+  --editor-code-border: #34344a;
+  --editor-code-text: #a1a1b5;
+}
+
+/*
+ * Component classes: plain CSS only. All selectors under [data-editor-chrome].
+ */
+[data-editor-chrome].ec-shell {
+  background-color: var(--editor-bg);
+  color: var(--editor-text);
+}
+
+[data-editor-chrome] .ec-header {
+  background-color: var(--editor-header-bg);
+  border-bottom: 1px solid var(--editor-border);
+}
+
+[data-editor-chrome] .ec-accent-dot {
+  background-color: var(--editor-accent);
+}
+
+[data-editor-chrome] .ec-title {
+  color: var(--editor-text);
+}
+
+[data-editor-chrome] .ec-nav-link {
+  color: var(--editor-text-muted);
+}
+[data-editor-chrome] .ec-nav-link:hover {
+  background-color: var(--editor-nav-hover-bg);
+  color: var(--editor-nav-hover-text);
+}
+
+[data-editor-chrome] .ec-brand {
+  color: var(--editor-text);
+  text-decoration: none;
+}
+[data-editor-chrome] .ec-brand:hover {
+  background-color: var(--editor-nav-hover-bg);
+}
+
+[data-editor-chrome] .ec-current-page {
+  color: var(--editor-text-muted);
+}
+[data-editor-chrome] .ec-current-page-slug {
+  color: var(--editor-text-secondary);
+}
+
+[data-editor-chrome] .ec-label {
+  color: var(--editor-text-muted);
+}
+
+[data-editor-chrome] .ec-input {
+  border: 1px solid var(--editor-input-border);
+  background-color: var(--editor-input-bg);
+  color: var(--editor-input-text);
+}
+[data-editor-chrome] .ec-input:focus {
+  border-color: var(--editor-accent-focus);
+  outline: none;
+  box-shadow: 0 0 0 1px var(--editor-accent-ring);
+}
+
+[data-editor-chrome] .ec-btn-secondary {
+  border: 1px solid var(--editor-button-secondary-border);
+  background-color: var(--editor-button-secondary-bg);
+  color: var(--editor-button-secondary-text);
+}
+[data-editor-chrome] .ec-btn-secondary:hover:not(:disabled) {
+  border-color: var(--editor-button-secondary-hover-border);
+  background-color: var(--editor-button-secondary-hover-bg);
+}
+
+[data-editor-chrome] .ec-btn-primary {
+  background-color: var(--editor-accent);
+  color: var(--editor-on-accent);
+}
+[data-editor-chrome] .ec-btn-primary:hover:not(:disabled) {
+  background-color: var(--editor-accent-hover);
+}
+
+[data-editor-chrome] .ec-btn-primary:disabled {
+  cursor: not-allowed;
+  background-color: var(--editor-surface-inset);
+  color: var(--editor-text-faint);
+  opacity: 1;
+  box-shadow: none;
+}
+
+[data-editor-chrome] .ec-text-muted {
+  color: var(--editor-text-muted);
+}
+[data-editor-chrome] .ec-text-faint {
+  color: var(--editor-text-faint);
+}
+[data-editor-chrome] .ec-text-accent-muted {
+  color: var(--editor-accent-muted);
+}
+
+[data-editor-chrome] .ec-error-bar {
+  border-bottom: 1px solid var(--editor-error-border);
+  background-color: var(--editor-error-bg);
+  color: var(--editor-error-text);
+}
+
+[data-editor-chrome] .ec-aside-left {
+  background-color: var(--editor-surface);
+  border-right: 1px solid var(--editor-border-subtle);
+}
+
+[data-editor-chrome] .ec-aside-right {
+  background-color: var(--editor-surface);
+  border-left: 1px solid var(--editor-border-subtle);
+}
+
+[data-editor-chrome] .ec-tab-segment {
+  border-radius: 8px;
+  background-color: var(--editor-surface-inset);
+  gap: 2px;
+}
+
+[data-editor-chrome] .ec-tab-segment-btn {
+  border: none;
+  background: transparent;
+  color: var(--editor-text-muted);
+  cursor: pointer;
+}
+[data-editor-chrome] .ec-tab-segment-btn:hover:not(.ec-tab-segment-btn-active) {
+  color: var(--editor-text-secondary);
+}
+[data-editor-chrome] .ec-tab-segment-btn:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 1px var(--editor-accent-ring);
+}
+
+[data-editor-chrome] .ec-tab-segment-btn-active {
+  background-color: var(--editor-surface-raised);
+  color: var(--editor-text);
+  box-shadow: 0 1px 0 rgb(0 0 0 / 0.22);
+}
+
+[data-editor-chrome] .ec-search-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border-radius: 8px;
+  padding: 7px 10px;
+  background-color: var(--editor-surface-inset);
+  border: 1px solid transparent;
+}
+[data-editor-chrome] .ec-search-row:focus-within {
+  border-color: var(--editor-border-subtle);
+}
+[data-editor-chrome] .ec-search-row-icon {
+  color: var(--editor-text-faint);
+}
+[data-editor-chrome] .ec-search-input {
+  color: var(--editor-text);
+}
+[data-editor-chrome] .ec-search-input::placeholder {
+  color: var(--editor-text-faint);
+}
+[data-editor-chrome] .ec-search-input:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+[data-editor-chrome] .ec-left-panel-divider {
+  height: 1px;
+  margin: 0 12px;
+  background-color: var(--editor-border-subtle);
+}
+
+[data-editor-chrome] .ec-section-label {
+  color: var(--editor-text-label);
+}
+
+[data-editor-chrome] .ec-pages-heading {
+  color: var(--editor-text-label);
+}
+
+[data-editor-chrome] .ec-icon-btn {
+  border: none;
+  background: transparent;
+  color: var(--editor-text-muted);
+  cursor: pointer;
+}
+[data-editor-chrome] .ec-icon-btn:hover:not(:disabled) {
+  background-color: var(--editor-tree-hover-bg);
+  color: var(--editor-text);
+}
+[data-editor-chrome] .ec-icon-btn:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 1px var(--editor-accent-ring);
+}
+
+[data-editor-chrome] .ec-page-list-row-idle {
+  border: 1px solid var(--editor-border-subtle);
+  background-color: var(--editor-surface-inset);
+}
+[data-editor-chrome] .ec-page-list-row-current {
+  border: 1px solid var(--editor-accent-border);
+  background-color: var(--editor-accent-surface);
+}
+
+[data-editor-chrome] .ec-page-list-row-main {
+  border: none;
+  background: transparent;
+  color: var(--editor-text);
+  cursor: pointer;
+}
+[data-editor-chrome] .ec-page-list-row-idle .ec-page-list-row-main:hover {
+  background-color: rgb(0 0 0 / 0.12);
+}
+[data-editor-chrome] .ec-page-list-row-current .ec-page-list-row-main:hover {
+  background-color: rgb(0 0 0 / 0.08);
+}
+
+[data-editor-chrome] .ec-page-list-row-home {
+  color: var(--editor-accent);
+}
+
+[data-editor-chrome] .ec-page-list-row-file {
+  color: var(--editor-text-muted);
+}
+
+[data-editor-chrome] .ec-page-new-slug-input {
+  border: none;
+  background: transparent;
+  color: var(--editor-text);
+  padding: 4px 2px;
+  min-height: 28px;
+}
+[data-editor-chrome] .ec-page-new-slug-input::placeholder {
+  color: var(--editor-text-faint);
+}
+[data-editor-chrome] .ec-page-new-slug-input:focus {
+  box-shadow: none;
+}
+
+[data-editor-chrome] .ec-new-slug-error {
+  color: var(--editor-danger-text);
+}
+
+[data-editor-chrome] .ec-page-row-more-summary {
+  border: none;
+  background: transparent;
+  color: var(--editor-text-muted);
+  align-self: stretch;
+}
+[data-editor-chrome] .ec-page-row-more-summary:hover {
+  background-color: var(--editor-tree-hover-bg);
+  color: var(--editor-text-secondary);
+}
+
+[data-editor-chrome] .ec-page-list-row .ec-page-row-more-icon {
+  opacity: 0;
+  transition: opacity 0.1s ease;
+}
+[data-editor-chrome] .ec-page-list-row:hover .ec-page-row-more-icon,
+[data-editor-chrome] .ec-page-list-row:focus-within .ec-page-row-more-icon,
+[data-editor-chrome] .ec-page-row-details[open] .ec-page-row-more-icon {
+  opacity: 1;
+}
+
+[data-editor-chrome] .ec-page-row-menu {
+  border: 1px solid var(--editor-border-subtle);
+  background-color: var(--editor-surface-raised);
+  box-shadow: 0 8px 24px rgb(0 0 0 / 0.35);
+}
+
+[data-editor-chrome] .ec-page-row-menu-item {
+  border: none;
+  background: transparent;
+  color: var(--editor-text-secondary);
+  cursor: pointer;
+}
+[data-editor-chrome] .ec-page-row-menu-item:hover {
+  background-color: var(--editor-tree-hover-bg);
+  color: var(--editor-text);
+}
+
+[data-editor-chrome] .ec-layer-page-label {
+  color: var(--editor-text-label);
+}
+
+[data-editor-chrome] .ec-layer-page-select-wrap {
+  position: relative;
+}
+
+[data-editor-chrome] .ec-layer-page-select {
+  appearance: none;
+  border-radius: 8px;
+  border: 1px solid var(--editor-border-subtle);
+  background-color: var(--editor-surface-inset);
+  color: var(--editor-text);
+  padding: 7px 32px 7px 10px;
+  line-height: 1.3;
+}
+[data-editor-chrome] .ec-layer-page-select:hover:not(:disabled) {
+  border-color: var(--editor-border);
+}
+[data-editor-chrome] .ec-layer-page-select:focus {
+  border-color: var(--editor-accent-focus);
+  outline: none;
+  box-shadow: 0 0 0 1px var(--editor-accent-ring);
+}
+
+[data-editor-chrome] .ec-layer-page-select-chevron {
+  color: var(--editor-text-muted);
+}
+
+[data-editor-chrome] .ec-badge-draft {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--editor-text-faint);
+}
+
+[data-editor-chrome] .ec-tree-box {
+  border: none;
+  background: transparent;
+  padding: 2px 0;
+}
+
+[data-editor-chrome] .ec-tree-btn {
+  border-radius: 6px;
+  border-left: none;
+  color: var(--editor-text-muted);
+}
+[data-editor-chrome] .ec-tree-btn:hover {
+  background-color: var(--editor-tree-hover-bg);
+  color: var(--editor-tree-hover-text);
+}
+
+[data-editor-chrome] .ec-tree-btn-selected {
+  background-color: var(--editor-accent-surface);
+  color: var(--editor-text);
+  font-weight: 500;
+}
+
+[data-editor-chrome] .ec-tree-type {
+  color: var(--editor-tree-type-idle);
+}
+[data-editor-chrome] .ec-tree-btn-selected .ec-tree-type {
+  color: var(--editor-accent-text);
+}
+
+[data-editor-chrome] .ec-tree-label,
+[data-editor-chrome] .ec-tree-id {
+  color: var(--editor-text-secondary);
+}
+
+[data-editor-chrome] .ec-library-card {
+  border: 1px dashed var(--editor-border-dashed);
+  background-color: var(--editor-surface-inset);
+}
+[data-editor-chrome] .ec-library-title {
+  color: var(--editor-text-secondary);
+}
+[data-editor-chrome] .ec-library-hint {
+  color: var(--editor-text-faint);
+}
+
+[data-editor-chrome] .ec-canvas {
+  background-color: var(--editor-canvas);
+}
+
+[data-editor-chrome] .ec-preview-workspace {
+  background-color: var(--editor-canvas);
+}
+
+[data-editor-chrome] .ec-preview-chrome {
+  position: relative;
+  z-index: 12;
+  border-bottom: 1px solid var(--editor-border-subtle);
+  background-color: var(--editor-surface);
+}
+
+/* Row itself must stay overflow: visible so <details> popovers are not clipped.
+   Horizontal scroll lives only on .ec-preview-bp-scroll (pills strip). */
+[data-editor-chrome] .ec-preview-chrome-row {
+  overflow: visible;
+}
+
+[data-editor-chrome] .ec-preview-bp-scroll {
+  min-width: 0;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+}
+
+[data-editor-chrome] .ec-preview-bp-more,
+[data-editor-chrome] .ec-preview-add-details {
+  flex: 0 0 auto;
+  align-self: center;
+  width: fit-content;
+  max-width: 100%;
+}
+
+[data-editor-chrome] .ec-preview-bp-inline {
+  flex: 1 1 0%;
+  min-width: 0;
+}
+
+[data-editor-chrome] .ec-preview-bp-item {
+  display: flex;
+  align-items: stretch;
+  overflow: hidden;
+  border-radius: 8px;
+}
+
+[data-editor-chrome] .ec-preview-bp-item:has(.ec-preview-bp-btn-active) .ec-preview-bp-delete {
+  background-color: var(--editor-surface-raised);
+  color: var(--editor-text-secondary);
+}
+
+[data-editor-chrome] .ec-preview-bp-delete {
+  display: inline-flex;
+  width: 28px;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-left: 1px solid var(--editor-border-subtle);
+  background-color: var(--editor-surface-inset);
+  color: var(--editor-text-muted);
+  cursor: pointer;
+  transition:
+    background-color 0.12s ease,
+    color 0.12s ease;
+}
+
+[data-editor-chrome] .ec-preview-bp-delete:hover {
+  background-color: var(--editor-tree-hover-bg);
+  color: var(--editor-text);
+}
+
+[data-editor-chrome] .ec-preview-bp-segment {
+  background-color: var(--editor-surface-inset);
+}
+
+[data-editor-chrome] .ec-preview-bp-btn {
+  border: none;
+  background: transparent;
+  color: var(--editor-text-muted);
+  cursor: pointer;
+}
+
+[data-editor-chrome] .ec-preview-bp-btn:hover:not(.ec-preview-bp-btn-active) {
+  color: var(--editor-text-secondary);
+}
+
+[data-editor-chrome] .ec-preview-bp-btn-active {
+  background-color: var(--editor-surface-raised);
+  color: var(--editor-text);
+  box-shadow: 0 1px 0 rgb(0 0 0 / 0.2);
+}
+
+[data-editor-chrome] .ec-preview-bp-dims {
+  color: var(--editor-text-faint);
+}
+
+[data-editor-chrome] .ec-preview-bp-btn-active .ec-preview-bp-dims {
+  color: var(--editor-text-muted);
+}
+
+[data-editor-chrome] .ec-preview-zoom-tools {
+  flex-shrink: 0;
+}
+
+[data-editor-chrome] .ec-preview-zoom-btn {
+  display: inline-flex;
+  height: 28px;
+  min-width: 28px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  border: 1px solid var(--editor-border-subtle);
+  background-color: var(--editor-surface-inset);
+  color: var(--editor-text-secondary);
+  font-size: 15px;
+  line-height: 1;
+  cursor: pointer;
+  transition:
+    background-color 0.12s ease,
+    border-color 0.12s ease;
+}
+
+[data-editor-chrome] .ec-preview-zoom-btn:hover {
+  border-color: var(--editor-border);
+  background-color: var(--editor-tree-hover-bg);
+  color: var(--editor-text);
+}
+
+[data-editor-chrome] .ec-preview-zoom-readout {
+  min-width: 2.75rem;
+  text-align: center;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--editor-text-muted);
+}
+
+[data-editor-chrome] .ec-preview-fit-btn {
+  margin-left: 2px;
+  border-radius: 6px;
+  border: 1px solid var(--editor-button-secondary-border);
+  background-color: var(--editor-button-secondary-bg);
+  padding: 4px 10px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--editor-button-secondary-text);
+  cursor: pointer;
+  transition:
+    border-color 0.12s ease,
+    background-color 0.12s ease;
+}
+
+[data-editor-chrome] .ec-preview-fit-btn:hover {
+  border-color: var(--editor-accent-border);
+  background-color: var(--editor-accent-surface-hover);
+}
+
+[data-editor-chrome] .ec-preview-chrome-hint {
+  color: var(--editor-text-faint);
+}
+
+[data-editor-chrome] .ec-preview-bp-more > summary,
+[data-editor-chrome] .ec-preview-add-details > summary {
+  list-style: none;
+  cursor: pointer;
+}
+
+[data-editor-chrome] .ec-preview-bp-more > summary::-webkit-details-marker,
+[data-editor-chrome] .ec-preview-add-details > summary::-webkit-details-marker {
+  display: none;
+}
+
+[data-editor-chrome] .ec-preview-bp-more-trigger {
+  height: 28px;
+  min-width: 28px;
+  border-radius: 6px;
+  border: 1px solid var(--editor-border-subtle);
+  background-color: var(--editor-surface-inset);
+  color: var(--editor-text-secondary);
+  transition:
+    border-color 0.12s ease,
+    background-color 0.12s ease;
+}
+
+[data-editor-chrome] .ec-preview-bp-more-trigger:hover {
+  border-color: var(--editor-border);
+  background-color: var(--editor-tree-hover-bg);
+  color: var(--editor-text);
+}
+
+[data-editor-chrome] .ec-preview-bp-more-panel {
+  position: absolute;
+  left: 0;
+  top: calc(100% + 4px);
+  z-index: 50;
+  min-width: 12rem;
+  max-height: min(70dvh, 22rem);
+  overflow-y: auto;
+  border-radius: 8px;
+  border: 1px solid var(--editor-border);
+  background-color: var(--editor-surface-raised);
+  box-shadow: 0 10px 28px rgb(0 0 0 / 0.35);
+}
+
+[data-editor-chrome] .ec-preview-add-summary {
+  height: 28px;
+  cursor: pointer;
+  border-radius: 6px;
+  border: 1px solid var(--editor-button-secondary-border);
+  background-color: var(--editor-button-secondary-bg);
+  padding: 0 10px;
+  color: var(--editor-button-secondary-text);
+  transition:
+    border-color 0.12s ease,
+    background-color 0.12s ease;
+}
+
+[data-editor-chrome] .ec-preview-add-summary:hover {
+  border-color: var(--editor-accent-border);
+  background-color: var(--editor-accent-surface-hover);
+}
+
+[data-editor-chrome] .ec-preview-add-panel {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 4px);
+  z-index: 50;
+  width: min(16rem, calc(100vw - 2rem));
+  border-radius: 8px;
+  border: 1px solid var(--editor-border);
+  background-color: var(--editor-surface-raised);
+  box-shadow: 0 10px 28px rgb(0 0 0 / 0.35);
+}
+
+[data-editor-chrome] .ec-preview-add-field-label {
+  font-size: 10px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--editor-text-faint);
+}
+
+[data-editor-chrome] .ec-preview-add-submit {
+  border: 1px solid var(--editor-accent-border);
+  background-color: var(--editor-accent-surface);
+  color: var(--editor-text);
+  cursor: pointer;
+  transition:
+    border-color 0.12s ease,
+    background-color 0.12s ease;
+}
+
+[data-editor-chrome] .ec-preview-add-submit:hover {
+  border-color: var(--editor-accent-border);
+  background-color: var(--editor-accent-surface-hover);
+}
+
+[data-editor-chrome] .ec-preview-viewport {
+  position: relative;
+  z-index: 0;
+  background-color: var(--editor-canvas);
+}
+
+[data-editor-chrome] .ec-preview-viewport-hand {
+  cursor: grab;
+}
+
+[data-editor-chrome] .ec-preview-viewport-panning {
+  cursor: grabbing;
+}
+
+[data-editor-chrome] .ec-preview-hand-overlay {
+  cursor: grab;
+  background: transparent;
+}
+
+[data-editor-chrome] .ec-preview-viewport-panning .ec-preview-hand-overlay {
+  cursor: grabbing;
+}
+
+[data-editor-chrome] .ec-preview-transform-wrap {
+  box-shadow:
+    0 0 0 1px var(--editor-border-subtle),
+    0 12px 40px rgb(0 0 0 / 0.35);
+}
+
+[data-editor-chrome] .ec-preview-frame-draft {
+  border: 1px solid var(--editor-preview-border);
+  background-color: var(--editor-preview-bg);
+}
+
+[data-editor-chrome] .ec-preview-empty {
+  border: 1px dashed var(--editor-border);
+  color: var(--editor-text-faint);
+}
+
+[data-editor-chrome] .ec-props-head {
+  border-bottom: none;
+}
+
+[data-editor-chrome] .ec-props-title {
+  color: var(--editor-text);
+}
+
+[data-editor-chrome] .ec-props-head-empty {
+  color: var(--editor-text-faint);
+}
+
+[data-editor-chrome] .ec-props-head-meta {
+  row-gap: 4px;
+}
+
+[data-editor-chrome] .ec-props-type-chip {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 6px;
+  padding: 2px 8px;
+  font-size: 11px;
+  font-weight: 500;
+  font-family: var(--font-geist-mono), ui-monospace, monospace;
+  background-color: var(--editor-surface-inset);
+  color: var(--editor-text-secondary);
+  text-transform: lowercase;
+}
+
+[data-editor-chrome] .ec-props-id {
+  color: var(--editor-text-muted);
+}
+
+[data-editor-chrome] .ec-props-internal-id summary:hover {
+  color: var(--editor-text-secondary);
+}
+
+[data-editor-chrome] .ec-props-internal-id-code {
+  color: var(--editor-text-muted);
+}
+
+[data-editor-chrome] .ec-props-stack {
+  display: flex;
+  flex-direction: column;
+}
+
+[data-editor-chrome] .ec-props-section {
+  padding-bottom: 2px;
+}
+
+[data-editor-chrome] .ec-props-section:not(:first-child) {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--editor-border-subtle);
+}
+
+[data-editor-chrome] .ec-props-section-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+[data-editor-chrome] .ec-props-section-title {
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--editor-text);
+}
+
+[data-editor-chrome] .ec-props-hint {
+  color: var(--editor-text-muted);
+}
+
+[data-editor-chrome] .ec-props-empty {
+  color: var(--editor-text-muted);
+}
+
+[data-editor-chrome] .ec-props-textarea {
+  min-height: 120px;
+}
+
+[data-editor-chrome] .ec-props-action-btn {
+  border-radius: 8px;
+  border: 1px solid var(--editor-button-secondary-border);
+  background-color: var(--editor-button-secondary-bg);
+  color: var(--editor-text);
+  padding: 8px 12px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition:
+    border-color 0.12s ease,
+    background-color 0.12s ease;
+}
+
+[data-editor-chrome] .ec-props-action-btn:hover {
+  border-color: var(--editor-accent-border);
+  background-color: var(--editor-accent-surface-hover);
+}
+
+[data-editor-chrome] .ec-props-danger-btn {
+  border-radius: 8px;
+  border: 1px solid rgb(185 28 28 / 0.35);
+  background: transparent;
+  color: var(--editor-danger-text);
+  padding: 8px 12px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition:
+    border-color 0.12s ease,
+    background-color 0.12s ease;
+}
+
+[data-editor-chrome] .ec-props-danger-btn:hover {
+  background-color: rgb(69 10 10 / 0.35);
+  border-color: rgb(248 113 113 / 0.45);
+}
+
+[data-editor-chrome] .ec-field {
+  border: 1px solid var(--editor-input-border);
+  background-color: var(--editor-input-bg);
+  color: var(--editor-input-text);
+}
+[data-editor-chrome] .ec-field:focus {
+  border-color: var(--editor-accent-focus);
+  outline: none;
+  box-shadow: 0 0 0 1px var(--editor-accent-ring);
+}
+
+[data-editor-chrome] .ec-field::placeholder {
+  color: var(--editor-text-faint);
+}
+
+[data-editor-chrome] .ec-field-label {
+  color: var(--editor-text-label);
+}
+
+[data-editor-chrome] .ec-body-text {
+  color: var(--editor-text-muted);
+}
+
+[data-editor-chrome] .ec-btn-ghost-accent {
+  border: 1px solid var(--editor-button-secondary-border);
+  background-color: var(--editor-button-secondary-bg);
+  color: var(--editor-text);
+}
+[data-editor-chrome] .ec-btn-ghost-accent:hover {
+  border-color: var(--editor-accent-border);
+  background-color: var(--editor-accent-surface-hover);
+}
+
+[data-editor-chrome] .ec-link-danger {
+  color: var(--editor-danger-text);
+}
+[data-editor-chrome] .ec-link-danger:hover {
+  color: var(--editor-danger-hover-text);
+}
+
+[data-editor-chrome] .ec-caution {
+  color: var(--editor-caution-text);
+}
+[data-editor-chrome] .ec-caution-code {
+  color: var(--editor-caution-code);
+}
+
+[data-editor-chrome] .ec-code-block {
+  border: 1px solid var(--editor-code-border);
+  background-color: var(--editor-code-bg);
+  color: var(--editor-code-text);
+}

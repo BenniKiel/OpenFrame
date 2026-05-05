@@ -1,0 +1,41 @@
+{
+  "version": 1,
+  "root": {
+    "id": "root",
+    "type": "container",
+    "props": {},
+    "children": [
+      {
+        "id": "hero-row",
+        "type": "frame",
+        "props": {
+          "layoutType": "stack",
+          "direction": "horizontal",
+          "wrap": false,
+          "gap": 12,
+          "padding": 16,
+          "radius": 10,
+          "widthSizeMode": "fill",
+          "heightSizeMode": "fit",
+          "align": "center",
+          "justify": "start",
+          "columns": 2
+        },
+        "children": [
+          {
+            "id": "hero-title",
+            "type": "text",
+            "props": { "text": "OpenFrame" },
+            "children": []
+          },
+          {
+            "id": "hero-sub",
+            "type": "text",
+            "props": { "text": "Frames + layout variants" },
+            "children": []
+          }
+        ]
+      }
+    ]
+  }
+}

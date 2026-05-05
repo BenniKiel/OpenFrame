@@ -1,0 +1,261 @@
+{
+  "version": 1,
+  "theme": {
+    "radius": "md",
+    "colorScheme": "light",
+    "typographyScale": "default"
+  },
+  "meta": {
+    "title": "OpenFrame landing MVP",
+    "description": "Golden example: sections, split, card, Phase 3 theme + responsive frames, Phase 4 scroll-reveal on hero section."
+  },
+  "root": {
+    "id": "root",
+    "type": "container",
+    "name": "Page",
+    "props": {},
+    "children": [
+      {
+        "id": "sec-hero",
+        "type": "section",
+        "name": "Hero section",
+        "props": {
+          "anchorId": "hero",
+          "scrollReveal": "fade-up"
+        },
+        "children": [
+          {
+            "id": "hero",
+            "type": "frame",
+            "name": "Hero",
+            "props": {
+              "layoutType": "stack",
+              "direction": "vertical",
+              "wrap": false,
+              "gap": 24,
+              "padding": 32,
+              "radius": 12,
+              "widthSizeMode": "fill",
+              "heightSizeMode": "fit",
+              "align": "center",
+              "justify": "center",
+              "columns": 2,
+              "when": {
+                "md": { "gap": 32, "padding": 40 }
+              }
+            },
+            "children": [
+              {
+                "id": "hero-kicker",
+                "type": "heading",
+                "name": "Kicker",
+                "props": {
+                  "text": "OpenFrame · Phase 2",
+                  "level": 6,
+                  "align": "center",
+                  "as": ""
+                },
+                "children": []
+              },
+              {
+                "id": "hero-headline",
+                "type": "heading",
+                "name": "Headline",
+                "props": {
+                  "text": "Ship self-hosted pages from one canonical document.",
+                  "level": 2,
+                  "align": "center",
+                  "as": ""
+                },
+                "children": []
+              },
+              {
+                "id": "hero-body",
+                "type": "text",
+                "name": "Body",
+                "props": {
+                  "text": "Edit in the studio, validate with Zod, render the same tree on the public site and in the draft iframe.",
+                  "as": "p",
+                  "maxWidth": null
+                },
+                "children": []
+              },
+              {
+                "id": "hero-shot",
+                "type": "image",
+                "name": "Hero image",
+                "props": {
+                  "src": "https://placehold.co/1200x630/e4e4e7/18181b?text=OpenFrame",
+                  "alt": "Product screenshot placeholder",
+                  "widthSizeMode": "fill",
+                  "heightSizeMode": "fit",
+                  "width": null,
+                  "widthUnit": "px",
+                  "height": null,
+                  "heightUnit": "px",
+                  "fit": "cover"
+                },
+                "children": []
+              },
+              {
+                "id": "hero-cta-row",
+                "type": "frame",
+                "name": "CTA row",
+                "props": {
+                  "layoutType": "stack",
+                  "direction": "horizontal",
+                  "wrap": false,
+                  "gap": 12,
+                  "padding": 0,
+                  "radius": 8,
+                  "widthSizeMode": "fit",
+                  "heightSizeMode": "fit",
+                  "align": "center",
+                  "justify": "center",
+                  "columns": 2
+                },
+                "children": [
+                  {
+                    "id": "cta-primary",
+                    "type": "button",
+                    "name": "Primary",
+                    "props": {
+                      "label": "Get started",
+                      "href": "/admin/editor?slug=home",
+                      "variant": "primary"
+                    },
+                    "children": []
+                  },
+                  {
+                    "id": "cta-docs",
+                    "type": "link",
+                    "name": "Docs link",
+                    "props": {
+                      "href": "https://github.com",
+                      "label": "View on GitHub",
+                      "external": true
+                    },
+                    "children": []
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "sec-features",
+        "type": "section",
+        "name": "Features",
+        "props": {
+          "anchorId": "features"
+        },
+        "children": [
+          {
+            "id": "features-split",
+            "type": "split",
+            "name": "Feature columns",
+            "props": {
+              "gap": 24,
+              "align": "stretch",
+              "ratio": "equal"
+            },
+            "children": [
+              {
+                "id": "card-left",
+                "type": "card",
+                "name": "Card A",
+                "props": {
+                  "surface": "muted",
+                  "padding": 20,
+                  "radius": 12
+                },
+                "children": [
+                  {
+                    "id": "feat-h1",
+                    "type": "heading",
+                    "name": "Feature title",
+                    "props": {
+                      "text": "Feature A",
+                      "level": 3,
+                      "align": "start",
+                      "as": ""
+                    },
+                    "children": []
+                  },
+                  {
+                    "id": "feat-t1",
+                    "type": "text",
+                    "name": "Feature copy",
+                    "props": {
+                      "text": "Use sections, split, and cards to build marketing patterns without deep nesting.",
+                      "as": "p",
+                      "maxWidth": null
+                    },
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "id": "card-right",
+                "type": "card",
+                "name": "Card B",
+                "props": {
+                  "surface": "muted",
+                  "padding": 20,
+                  "radius": 12
+                },
+                "children": [
+                  {
+                    "id": "feat-h2",
+                    "type": "heading",
+                    "name": "Feature title",
+                    "props": {
+                      "text": "Feature B",
+                      "level": 3,
+                      "align": "start",
+                      "as": ""
+                    },
+                    "children": []
+                  },
+                  {
+                    "id": "feat-t2",
+                    "type": "text",
+                    "name": "Feature copy",
+                    "props": {
+                      "text": "Anchor links use semantic section ids for in-page navigation.",
+                      "as": "p",
+                      "maxWidth": null
+                    },
+                    "children": []
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "sec-footer",
+        "type": "section",
+        "name": "Footer",
+        "props": {
+          "anchorId": "footer"
+        },
+        "children": [
+          {
+            "id": "footer-text",
+            "type": "text",
+            "name": "Footer",
+            "props": {
+              "text": "© OpenFrame — Phase 2 sections example.",
+              "as": "p",
+              "maxWidth": null
+            },
+            "children": []
+          }
+        ]
+      }
+    ]
+  }
+}

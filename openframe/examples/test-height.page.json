@@ -1,0 +1,28 @@
+{
+  "version": 1,
+  "root": {
+    "id": "root",
+    "type": "container",
+    "name": "Page",
+    "props": {
+      "heightMode": "fit"
+    },
+    "children": [
+      {
+        "id": "hero",
+        "type": "frame",
+        "name": "Hero",
+        "props": {
+          "layoutType": "stack",
+          "direction": "vertical",
+          "wrap": false,
+          "widthSizeMode": "fill",
+          "heightSizeMode": "fixed",
+          "heightSizeValue": 100,
+          "heightSizeUnit": "vh"
+        },
+        "children": []
+      }
+    ]
+  }
+}

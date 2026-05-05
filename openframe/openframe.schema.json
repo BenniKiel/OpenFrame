@@ -1,0 +1,81 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://openframe.local/schemas/openframe-page-document-v1.json",
+  "title": "OpenframePageDocument",
+  "description": "Structural mirror of page-document.ts / parsePageDocument. Required keys must be present in JSON; optional name may be omitted. Keep in sync when Zod schema changes.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["version", "root"],
+  "properties": {
+    "version": {
+      "type": "integer",
+      "const": 1,
+      "description": "Schema version; migrations bump this literal."
+    },
+    "root": {
+      "$ref": "#/$defs/pageNode"
+    },
+    "theme": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Optional page shell theme (Phase 3.1).",
+      "properties": {
+        "radius": {
+          "type": "string",
+          "enum": ["none", "sm", "md", "lg", "xl"]
+        },
+        "colorScheme": {
+          "type": "string",
+          "enum": ["light", "dark"]
+        },
+        "typographyScale": {
+          "type": "string",
+          "enum": ["default", "large"]
+        }
+      }
+    },
+    "meta": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Optional SEO / social metadata (Phase 3.3).",
+      "properties": {
+        "title": { "type": "string", "maxLength": 200 },
+        "description": { "type": "string", "maxLength": 2000 },
+        "ogImage": { "type": "string", "maxLength": 2048 }
+      }
+    }
+  },
+  "$defs": {
+    "pageNode": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "type", "props", "children"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Stable unique id within the document tree."
+        },
+        "type": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Block kind; built-ins: container, frame, text, heading, link, button, image, section, split, card (see docs/systems/PreviewRenderer.md)."
+        },
+        "name": {
+          "type": "string",
+          "description": "Optional editor display name (trimmed by Zod, max 128 chars)."
+        },
+        "props": {
+          "type": "object",
+          "description": "Block-specific props; shape depends on type."
+        },
+        "children": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/pageNode"
+          }
+        }
+      }
+    }
+  }
+}
