@@ -2,15 +2,33 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  DndContext,
+  DragOverlay,
+  pointerWithin,
+  PointerSensor,
+  useDraggable,
+  useDroppable,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from "@dnd-kit/core";
+import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 
 import {
+  buildNodeMaps,
+  canParentAcceptChild,
+  decodeLayerClipboard,
   findNodeById,
+  flattenVisibleTree,
   getDisplayLayerName,
   getLayerNamePlaceholder,
   useEditorStore,
   type EditorChildKind,
+  type TreeDndRow,
+  type TreeDndSlot,
 } from "@/lib/editor";
+import { useTreeDnd } from "@/lib/editor/use-tree-dnd";
 import { type PageNode, type PageTheme } from "@/lib/openframe";
 import { isSafePageSlug } from "@/lib/persistence/slug";
 import { isPreviewContentSizeMessage, postDraftToPreview } from "@/lib/preview";
@@ -33,7 +51,7 @@ import { FRAME_BREAKPOINT_MIN_PX, mergeFrameWhenBreakpoint, type FrameBreakpoint
 import { normalizeHeadingProps } from "@/lib/preview/heading-block";
 import { normalizeImageProps, type ImageDimensionUnit, type ImageFit } from "@/lib/preview/image-block";
 import { normalizeLinkProps } from "@/lib/preview/link-block";
-import { normalizeSectionProps } from "@/lib/preview/section-block";
+import { normalizeSectionProps, SECTION_PADDING_Y_OPTIONS, type SectionPaddingY } from "@/lib/preview/section-block";
 import { normalizeSplitProps, type SplitCrossAlign, type SplitRatio } from "@/lib/preview/split-block";
 import { normalizeTextProps, type TextRole } from "@/lib/preview/text-block";
 import {
@@ -312,40 +330,106 @@ function PageListRow({
   );
 }
 
-function TreeRows({
+function TreeRowItem({
+  row,
   node,
-  depth,
   selectedId,
   onSelect,
+  isSelectedBranch,
+  collapsedIds,
+  onToggleCollapse,
+  dragActiveId,
+  dragOverSlot,
+  registerRowEl,
 }: {
+  row: TreeDndRow;
   node: PageNode;
-  depth: number;
   selectedId: string | null;
   onSelect: (id: string) => void;
+  isSelectedBranch: boolean;
+  collapsedIds: Set<string>;
+  onToggleCollapse: (id: string) => void;
+  dragActiveId: string | null;
+  dragOverSlot: TreeDndSlot | null;
+  registerRowEl: (id: string, el: HTMLElement | null) => void;
 }) {
   const isSelected = node.id === selectedId;
+  const hasChildren = node.children.length > 0;
+  const isCollapsed = hasChildren && collapsedIds.has(node.id);
+  const isRoot = node.id === "root";
+
+  // Draggable (the button is the handle so the whole row can be a drop target)
+  const {
+    attributes,
+    listeners,
+    setNodeRef: setDragRef,
+    isDragging,
+  } = useDraggable({ id: node.id, disabled: isRoot });
+
+  // Droppable (entire row div)
+  const { setNodeRef: setDropRef } = useDroppable({ id: node.id });
+
+  const isActive = dragActiveId === node.id;
+  const isDropTarget = dragOverSlot?.overNodeId === node.id && !isActive;
+  const isInside = isDropTarget && dragOverSlot?.placement === "inside";
+
+  /** Combine dnd-kit droppable ref with our registry ref so the indicator can read getBoundingClientRect. */
+  const composedRef = useCallback(
+    (el: HTMLElement | null) => {
+      setDropRef(el);
+      registerRowEl(node.id, el);
+    },
+    [node.id, registerRowEl, setDropRef],
+  );
+
   return (
-    <div className="select-none">
-      <button
-        type="button"
-        onClick={() => onSelect(node.id)}
-        className={`ec-tree-btn flex w-full items-center gap-2 py-1.5 pr-2 text-left text-[13px] transition-colors ${
-          isSelected ? "ec-tree-btn-selected" : ""
-        }`}
-        style={{ paddingLeft: `${10 + depth * 12}px` }}
+    <div className={`select-none ${isSelected ? "ec-tree-selected-subtree" : ""}`}>
+      <div
+        ref={composedRef}
+        data-tree-row-id={node.id}
+        data-tree-row-depth={row.depth}
+        className={[
+          "ec-tree-btn flex w-full items-center gap-2 py-1.5 pr-2 text-left text-[13px] transition-colors",
+          isSelected ? "ec-tree-btn-selected" : "",
+          !isSelected && isSelectedBranch ? "ec-tree-btn-descendant" : "",
+          isActive || isDragging ? "ec-tree-btn-dragging" : "",
+          isInside ? "ec-tree-btn-drop-inside" : "",
+        ]
+          .filter(Boolean)
+          .join(" ")}
+        style={{ paddingLeft: `${10 + row.depth * 12}px` }}
       >
-        <span className="ec-tree-type shrink-0 font-mono text-[11px]">{node.type}</span>
-        <span className="ec-tree-label min-w-0 flex-1 truncate text-[13px]">{getDisplayLayerName(node)}</span>
-      </button>
-      {node.children.map((child) => (
-        <TreeRows
-          key={child.id}
-          node={child}
-          depth={depth + 1}
-          selectedId={selectedId}
-          onSelect={onSelect}
-        />
-      ))}
+        {hasChildren ? (
+          <button
+            type="button"
+            aria-label={isCollapsed ? "Expand children" : "Collapse children"}
+            className="ec-tree-collapse-btn inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-sm"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              onToggleCollapse(node.id);
+            }}
+          >
+            <IconChevronDown
+              className={`h-3.5 w-3.5 transition-transform ${isCollapsed ? "-rotate-90" : "rotate-0"}`}
+            />
+          </button>
+        ) : (
+          <span className="inline-block h-4 w-4 shrink-0" aria-hidden />
+        )}
+        <button
+          ref={setDragRef}
+          type="button"
+          onClick={() => onSelect(node.id)}
+          className="ec-tree-row-main min-w-0 flex flex-1 items-center gap-2 text-left"
+          aria-current={isSelected ? "true" : undefined}
+          {...attributes}
+          {...listeners}
+        >
+          <span className="ec-tree-type shrink-0 font-mono text-[11px]">{node.type}</span>
+          <span className="ec-tree-label min-w-0 flex-1 truncate text-[13px]">{getDisplayLayerName(node)}</span>
+        </button>
+      </div>
     </div>
   );
 }
@@ -358,6 +442,79 @@ function PropsSection({ title, children }: { title: string; children: React.Reac
       </div>
       <div className="ec-props-section-body">{children}</div>
     </section>
+  );
+}
+
+/** Compact single-row drag ghost (Framer-style — no full subtree). */
+function TreeDragOverlayRow({ node }: { node: PageNode }) {
+  const hasChildren = node.children.length > 0;
+  return (
+    <div className="ec-tree-drag-overlay-row flex items-center gap-2 px-2 py-1 text-left text-[13px]">
+      {hasChildren ? (
+        <IconChevronDown className="h-3.5 w-3.5 shrink-0" />
+      ) : (
+        <span className="inline-block h-3.5 w-3.5 shrink-0" aria-hidden />
+      )}
+      <span className="ec-tree-type shrink-0 font-mono text-[11px]">{node.type}</span>
+      <span className="ec-tree-label min-w-0 flex-1 truncate text-[13px]">{getDisplayLayerName(node)}</span>
+    </div>
+  );
+}
+
+/**
+ * Single absolute-positioned drop indicator (Framer-style).
+ *
+ * Reads the over-row's bounding rect via DOM (no per-row pseudo-elements that jiggle).
+ * Indents to the depth where the dragged node will actually land.
+ */
+function TreeDropIndicator({
+  containerRef,
+  rowEls,
+  slot,
+  parentIdByNodeId,
+}: {
+  containerRef: React.RefObject<HTMLDivElement | null>;
+  rowEls: React.MutableRefObject<Map<string, HTMLElement>>;
+  slot: TreeDndSlot | null;
+  parentIdByNodeId: Map<string, string | null>;
+}) {
+  const [rect, setRect] = useState<{ top: number; left: number; right: number } | null>(null);
+
+  useEffect(() => {
+    if (!slot || slot.placement === "inside") {
+      setRect(null);
+      return;
+    }
+    const container = containerRef.current;
+    const rowEl = rowEls.current.get(slot.overNodeId);
+    if (!container || !rowEl) {
+      setRect(null);
+      return;
+    }
+    const cRect = container.getBoundingClientRect();
+    const rRect = rowEl.getBoundingClientRect();
+    /** Visual depth of the line = depth of the over-row (we land in same parent for before/after). */
+    const depthAttr = rowEl.getAttribute("data-tree-row-depth");
+    const depth = depthAttr ? Number.parseInt(depthAttr, 10) || 0 : 0;
+    void parentIdByNodeId;
+    const indentLeft = 10 + depth * 12;
+    const top = (slot.placement === "before" ? rRect.top : rRect.bottom) - cRect.top + container.scrollTop;
+    setRect({
+      top,
+      left: indentLeft,
+      right: 6,
+    });
+  }, [containerRef, parentIdByNodeId, rowEls, slot]);
+
+  if (!rect) {
+    return null;
+  }
+  return (
+    <div
+      className="ec-tree-drop-line"
+      style={{ top: rect.top, left: rect.left, right: rect.right }}
+      aria-hidden
+    />
   );
 }
 
@@ -374,15 +531,15 @@ const ADD_BLOCK_KINDS: EditorChildKind[] = [
 ];
 
 const ADD_BLOCK_LABEL: Record<EditorChildKind, string> = {
-  heading: "Heading",
-  text: "Text",
-  link: "Link",
-  button: "Button",
-  image: "Image",
-  frame: "Frame",
-  section: "Section",
-  split: "Split",
-  card: "Card",
+  heading: "Add Heading",
+  text: "Add Text",
+  link: "Add Link",
+  button: "Add Button",
+  image: "Add Image",
+  frame: "Add Frame",
+  section: "Add Section",
+  split: "Add Split",
+  card: "Add Card",
 };
 
 const SPLIT_ALIGN_OPTIONS: SplitCrossAlign[] = ["stretch", "start", "center", "end"];
@@ -393,20 +550,23 @@ function AddBlockButtonGrid({
   addChildTo,
 }: {
   nodeId: string;
-  addChildTo: (parentId: string, kind: EditorChildKind) => void;
+  addChildTo: (parentId: string, kind: EditorChildKind, options?: { selectNew?: boolean }) => void;
 }) {
   return (
-    <div className="mt-1 grid grid-cols-2 gap-2">
+    <div className="mt-1">
+      <p className="ec-props-hint mb-2 text-[11px]">Tipp: Shift+Click fuegt hinzu und behaelt den Parent ausgewaehlt.</p>
+      <div className="grid grid-cols-2 gap-2">
       {ADD_BLOCK_KINDS.map((kind) => (
         <button
           key={kind}
           type="button"
           className="ec-props-action-btn w-full text-[12px]"
-          onClick={() => addChildTo(nodeId, kind)}
+          onClick={(e) => addChildTo(nodeId, kind, { selectNew: !e.shiftKey })}
         >
           {ADD_BLOCK_LABEL[kind]}
         </button>
       ))}
+      </div>
     </div>
   );
 }
@@ -558,6 +718,13 @@ function PropsPanel() {
     }
     return findNodeById(document.root, selectedNodeId);
   }, [document, selectedNodeId]);
+  const [imageUploadStatus, setImageUploadStatus] = useState<"idle" | "uploading" | "error">("idle");
+  const [imageUploadError, setImageUploadError] = useState<string | null>(null);
+
+  useEffect(() => {
+    setImageUploadStatus("idle");
+    setImageUploadError(null);
+  }, [node?.id]);
 
   const textareaClass =
     "ec-field ec-props-textarea w-full resize-y rounded-lg px-3 py-2.5 text-[13px] leading-relaxed shadow-inner min-h-[120px]";
@@ -902,10 +1069,66 @@ function PropsPanel() {
   if (node.type === "image") {
     const p = normalizeImageProps(node.props);
     const fits: ImageFit[] = ["cover", "contain", "fill", "none"];
+    const uploadImage = async (file: File) => {
+      setImageUploadStatus("uploading");
+      setImageUploadError(null);
+      try {
+        const formData = new FormData();
+        formData.append("file", file);
+        const res = await fetch("/api/assets/upload", {
+          method: "POST",
+          body: formData,
+        });
+        const body: unknown = await res.json().catch(() => null);
+        if (!res.ok) {
+          const msg =
+            body && typeof body === "object" && "error" in body
+              ? String((body as { error: unknown }).error)
+              : `upload_failed_${res.status}`;
+          throw new Error(msg);
+        }
+        const url =
+          body && typeof body === "object" && "url" in body && typeof (body as { url: unknown }).url === "string"
+            ? (body as { url: string }).url
+            : null;
+        if (!url) {
+          throw new Error("upload_missing_url");
+        }
+        updateNodeProps(node.id, { src: url });
+        setImageUploadStatus("idle");
+      } catch (e) {
+        setImageUploadStatus("error");
+        setImageUploadError(e instanceof Error ? e.message : "upload_failed");
+      }
+    };
+
     return (
       <div className="ec-props-stack">
         <PropsSection title="Image">
           <div className="mt-1 grid grid-cols-1 gap-2">
+            <label className="ec-label flex flex-col gap-1 text-[11px]">
+              <span className="ec-text-muted">Upload image</span>
+              <input
+                type="file"
+                accept="image/png,image/jpeg,image/webp,image/gif,image/svg+xml"
+                className="ec-input rounded-md px-2.5 py-1.5 text-[12px]"
+                disabled={imageUploadStatus === "uploading"}
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (!file) {
+                    return;
+                  }
+                  void uploadImage(file);
+                  // Allow uploading the same file again if needed.
+                  e.currentTarget.value = "";
+                }}
+              />
+              <span className="ec-text-muted text-[10px]">PNG/JPG/WebP/GIF/SVG, max 8MB.</span>
+              {imageUploadStatus === "uploading" ? (
+                <span className="text-[10px] text-[var(--editor-text-muted)]">Uploading…</span>
+              ) : null}
+              {imageUploadError ? <span className="text-[10px] text-red-500">{imageUploadError}</span> : null}
+            </label>
             <label className="ec-label flex flex-col gap-1 text-[11px]">
               <span className="ec-text-muted">Image URL</span>
               <input
@@ -1077,6 +1300,20 @@ function PropsPanel() {
     return (
       <div className="ec-props-stack">
         <PropsSection title="Section">
+          <label className="ec-label mt-1 flex flex-col gap-1 text-[11px]">
+            <span className="ec-text-muted">Vertical spacing</span>
+            <select
+              className="ec-input rounded-md px-2 py-1.5 text-[12px]"
+              value={p.paddingY}
+              onChange={(e) => updateNodeProps(node.id, { paddingY: e.target.value as SectionPaddingY })}
+            >
+              {SECTION_PADDING_Y_OPTIONS.map((v) => (
+                <option key={v} value={v}>
+                  {v}
+                </option>
+              ))}
+            </select>
+          </label>
           <label className="ec-label mt-1 flex flex-col gap-1 text-[11px]">
             <span className="ec-text-muted">Anchor id (optional)</span>
             <input
@@ -2380,11 +2617,24 @@ export function EditorApp({ initialSlug }: { initialSlug: string }) {
   const previewNonce = useEditorStore((s) => s.previewNonce);
   const loadPage = useEditorStore((s) => s.loadPage);
   const savePage = useEditorStore((s) => s.savePage);
+  const undo = useEditorStore((s) => s.undo);
+  const redo = useEditorStore((s) => s.redo);
+  const canUndo = useEditorStore((s) => s.canUndo());
+  const canRedo = useEditorStore((s) => s.canRedo());
   const selectNode = useEditorStore((s) => s.selectNode);
+  const reorderNodesByIds = useEditorStore((s) => s.reorderNodesByIds);
   const updateNodeName = useEditorStore((s) => s.updateNodeName);
+  const duplicateSelectedNode = useEditorStore((s) => s.duplicateSelectedNode);
+  const getClipboardPayloadForSelectedNode = useEditorStore((s) => s.getClipboardPayloadForSelectedNode);
+  const pasteFromClipboardText = useEditorStore((s) => s.pasteFromClipboardText);
+  const moveSelectedNode = useEditorStore((s) => s.moveSelectedNode);
+  const canMoveSelectedNodeUp = useEditorStore((s) => s.canMoveSelectedNode("up"));
+  const canMoveSelectedNodeDown = useEditorStore((s) => s.canMoveSelectedNode("down"));
+  const removeSelectedNode = useEditorStore((s) => s.removeSelectedNode);
 
   const [leftTab, setLeftTab] = useState<LeftTab>("layers");
   const [leftSearch, setLeftSearch] = useState("");
+  const [collapsedLayerIds, setCollapsedLayerIds] = useState<Set<string>>(() => new Set());
   const [pageSlugs, setPageSlugs] = useState<string[]>([]);
   const [pageListError, setPageListError] = useState<string | null>(null);
   const [pageListLoading, setPageListLoading] = useState(true);
@@ -2536,6 +2786,12 @@ export function EditorApp({ initialSlug }: { initialSlug: string }) {
     }
     return filterPageNodeTree(document.root, q);
   }, [document, leftSearch]);
+  const visibleTreeRows = useMemo(() => {
+    if (!layersTreeRoot) {
+      return [] as TreeDndRow[];
+    }
+    return flattenVisibleTree(layersTreeRoot, collapsedLayerIds);
+  }, [collapsedLayerIds, layersTreeRoot]);
 
   useEffect(() => {
     const customs = loadCustomEditorPreviewBreakpoints();
@@ -2693,6 +2949,58 @@ export function EditorApp({ initialSlug }: { initialSlug: string }) {
     }
     return findNodeById(document.root, selectedNodeId);
   }, [document, selectedNodeId]);
+  const treeDndSensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 6 } }));
+  const treeDndEnabled = leftSearch.trim() === "";
+  const nodeMaps = useMemo(() => (document ? buildNodeMaps(document.root) : { nodeById: new Map<string, PageNode>(), parentIdByNodeId: new Map<string, string | null>() }), [document]);
+  const flatNodesById = nodeMaps.nodeById;
+  const parentIdByNodeId = nodeMaps.parentIdByNodeId;
+  const toggleLayerCollapse = useCallback((id: string) => {
+    setCollapsedLayerIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
+  }, []);
+  const isLayerCollapsed = useCallback((id: string) => collapsedLayerIds.has(id), [collapsedLayerIds]);
+  const expandLayer = useCallback((id: string) => {
+    setCollapsedLayerIds((prev) => {
+      if (!prev.has(id)) {
+        return prev;
+      }
+      const next = new Set(prev);
+      next.delete(id);
+      return next;
+    });
+  }, []);
+  const treeDnd = useTreeDnd({
+    documentRoot: treeDndEnabled ? document?.root ?? null : null,
+    canParentAcceptChild,
+    isCollapsed: isLayerCollapsed,
+    onAutoExpand: expandLayer,
+  });
+  const treeBoxRef = useRef<HTMLDivElement | null>(null);
+  const rowElsRef = useRef<Map<string, HTMLElement>>(new Map());
+  const registerRowEl = useCallback((id: string, el: HTMLElement | null) => {
+    if (el) {
+      rowElsRef.current.set(id, el);
+    } else {
+      rowElsRef.current.delete(id);
+    }
+  }, []);
+  const onLayerTreeDragEnd = useCallback(
+    (event: DragEndEvent) => {
+      const result = treeDnd.consumeDrop(event);
+      if (!result) {
+        return;
+      }
+      reorderNodesByIds(result.activeId, result.slot.overNodeId, result.slot.placement);
+    },
+    [reorderNodesByIds, treeDnd],
+  );
 
   const applyPreviewFit = useCallback(() => {
     const el = previewViewportRef.current;
@@ -2707,12 +3015,16 @@ export function EditorApp({ initialSlug }: { initialSlug: string }) {
   }, [previewBpId, previewBreakpoints]);
 
   useEffect(() => {
-    const onSaveShortcut = (e: KeyboardEvent) => {
-      const isS = e.key === "s" || e.key === "S" || e.code === "KeyS";
-      if (!isS) {
+    const onEditorShortcut = (e: KeyboardEvent) => {
+      if (!(e.metaKey || e.ctrlKey) || e.altKey) {
         return;
       }
-      if (!(e.metaKey || e.ctrlKey) || e.altKey) {
+      const key = e.key.toLowerCase();
+      const isSave = key === "s" || e.code === "KeyS";
+      const isUndo = key === "z" || e.code === "KeyZ";
+      const isRedo = (isUndo && e.shiftKey) || key === "y" || e.code === "KeyY";
+      const isDuplicate = key === "d" || e.code === "KeyD";
+      if (!isSave && !isUndo && !isRedo && !isDuplicate) {
         return;
       }
       const dom = globalThis.document;
@@ -2735,20 +3047,174 @@ export function EditorApp({ initialSlug }: { initialSlug: string }) {
       if (!inEditor) {
         return;
       }
+      const shouldIgnoreMutationShortcut =
+        ae instanceof HTMLElement &&
+        (ae.tagName === "INPUT" || ae.tagName === "TEXTAREA" || ae.isContentEditable);
+
       // Capture phase + default prevention so Safari/Chrome never open “Save Page” on this route.
       e.preventDefault();
       e.stopPropagation();
 
-      const { status, document: pageDoc, isDirty, savePage } = useEditorStore.getState();
-      const saveBusy = status === "loading" || status === "saving";
-      if (saveBusy || !pageDoc || !isDirty) {
+      const state = useEditorStore.getState();
+      if (isSave) {
+        const saveBusy = state.status === "loading" || state.status === "saving";
+        if (saveBusy || !state.document || !state.isDirty) {
+          return;
+        }
+        void state.savePage();
         return;
       }
-      void savePage();
+      if (isRedo) {
+        if (shouldIgnoreMutationShortcut) {
+          return;
+        }
+        state.redo();
+        return;
+      }
+      if (isUndo) {
+        if (shouldIgnoreMutationShortcut) {
+          return;
+        }
+        state.undo();
+        return;
+      }
+      if (isDuplicate) {
+        if (shouldIgnoreMutationShortcut) {
+          return;
+        }
+        const selectedId = state.selectedNodeId;
+        if (!state.document || !selectedId || selectedId === state.document.root.id) {
+          return;
+        }
+        state.duplicateSelectedNode();
+      }
     };
 
-    window.addEventListener("keydown", onSaveShortcut, { capture: true });
-    return () => window.removeEventListener("keydown", onSaveShortcut, { capture: true });
+    const onDeleteShortcut = (e: KeyboardEvent) => {
+      const isDelete = e.key === "Delete" || e.key === "Backspace";
+      if (!isDelete) {
+        return;
+      }
+      const dom = globalThis.document;
+      if (!dom) {
+        return;
+      }
+      const chrome = dom.querySelector("[data-editor-chrome]");
+      if (!chrome) {
+        return;
+      }
+      const ae = dom.activeElement;
+      const target = e.target;
+      const inEditor =
+        (ae instanceof Node && chrome.contains(ae)) ||
+        ae === dom.body ||
+        ae === dom.documentElement ||
+        (target instanceof Node && chrome.contains(target));
+      if (!inEditor) {
+        return;
+      }
+      const typingTarget =
+        ae instanceof HTMLElement &&
+        (ae.tagName === "INPUT" || ae.tagName === "TEXTAREA" || ae.isContentEditable);
+      if (typingTarget) {
+        return;
+      }
+      const state = useEditorStore.getState();
+      const selectedId = state.selectedNodeId;
+      if (!state.document || !selectedId || selectedId === state.document.root.id) {
+        return;
+      }
+      e.preventDefault();
+      e.stopPropagation();
+      state.removeSelectedNode();
+    };
+
+    window.addEventListener("keydown", onEditorShortcut, { capture: true });
+    window.addEventListener("keydown", onDeleteShortcut, { capture: true });
+    return () => {
+      window.removeEventListener("keydown", onEditorShortcut, { capture: true });
+      window.removeEventListener("keydown", onDeleteShortcut, { capture: true });
+    };
+  }, []);
+
+  useEffect(() => {
+    const dom = globalThis.document;
+    if (!dom) {
+      return;
+    }
+    const chrome = dom.querySelector("[data-editor-chrome]");
+    if (!chrome) {
+      return;
+    }
+
+    const isNativeTextTarget = (target: EventTarget | null) => {
+      const el = target instanceof HTMLElement ? target : null;
+      if (!el) {
+        return false;
+      }
+      if (el.isContentEditable) {
+        return true;
+      }
+      const tag = el.tagName;
+      return tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT";
+    };
+
+    const onCopy = (e: Event) => {
+      if (!(e instanceof ClipboardEvent)) {
+        return;
+      }
+      if (isNativeTextTarget(e.target)) {
+        return;
+      }
+      const payload = useEditorStore.getState().getClipboardPayloadForSelectedNode();
+      if (!payload) {
+        return;
+      }
+      e.preventDefault();
+      e.clipboardData?.setData("text/plain", payload);
+    };
+
+    const onCut = (e: Event) => {
+      if (!(e instanceof ClipboardEvent)) {
+        return;
+      }
+      if (isNativeTextTarget(e.target)) {
+        return;
+      }
+      const payload = useEditorStore.getState().getClipboardPayloadForSelectedNode();
+      if (!payload) {
+        return;
+      }
+      e.preventDefault();
+      e.clipboardData?.setData("text/plain", payload);
+      useEditorStore.getState().removeSelectedNode();
+    };
+
+    const onPaste = (e: Event) => {
+      if (!(e instanceof ClipboardEvent)) {
+        return;
+      }
+      if (isNativeTextTarget(e.target)) {
+        return;
+      }
+      const text = e.clipboardData?.getData("text/plain") ?? "";
+      if (!decodeLayerClipboard(text)) {
+        return;
+      }
+      const ok = useEditorStore.getState().pasteFromClipboardText(text);
+      if (ok) {
+        e.preventDefault();
+      }
+    };
+
+    chrome.addEventListener("copy", onCopy, true);
+    chrome.addEventListener("cut", onCut, true);
+    chrome.addEventListener("paste", onPaste, true);
+    return () => {
+      chrome.removeEventListener("copy", onCopy, true);
+      chrome.removeEventListener("cut", onCut, true);
+      chrome.removeEventListener("paste", onPaste, true);
+    };
   }, []);
 
   useEffect(() => {
@@ -3063,6 +3529,24 @@ export function EditorApp({ initialSlug }: { initialSlug: string }) {
           </Link>
           <button
             type="button"
+            className="ec-btn-secondary rounded-md px-3 py-1.5 text-[13px] font-medium transition-colors disabled:cursor-not-allowed"
+            disabled={!canUndo}
+            title="Undo (Ctrl+Z or ⌘Z)"
+            onClick={() => undo()}
+          >
+            Undo
+          </button>
+          <button
+            type="button"
+            className="ec-btn-secondary rounded-md px-3 py-1.5 text-[13px] font-medium transition-colors disabled:cursor-not-allowed"
+            disabled={!canRedo}
+            title="Redo (Ctrl+Shift+Z, Ctrl+Y, or ⌘⇧Z)"
+            onClick={() => redo()}
+          >
+            Redo
+          </button>
+          <button
+            type="button"
             className="ec-btn-primary rounded-md px-3.5 py-1.5 text-[13px] font-medium shadow-sm transition-colors disabled:cursor-not-allowed"
             disabled={busy || !document || !isDirty}
             title="Save (Ctrl+S or ⌘S)"
@@ -3286,15 +3770,68 @@ export function EditorApp({ initialSlug }: { initialSlug: string }) {
                 ) : !layersTreeRoot ? (
                   <p className="ec-text-muted text-[13px]">No matching layers.</p>
                 ) : (
-                  <div className="ec-tree-box">
-                    <TreeRows
-                      node={layersTreeRoot}
-                      depth={0}
-                      selectedId={selectedNodeId}
-                      onSelect={(id) => selectNode(id)}
-                    />
+                  <div className="ec-tree-box" ref={treeBoxRef}>
+                    <DndContext
+                      sensors={treeDndSensors}
+                      collisionDetection={pointerWithin}
+                      onDragStart={treeDnd.onDragStart}
+                      onDragOver={treeDnd.onDragOver}
+                      onDragEnd={onLayerTreeDragEnd}
+                      onDragCancel={treeDnd.onDragCancel}
+                    >
+                      {visibleTreeRows.map((row) => {
+                        const rowNode = flatNodesById.get(row.nodeId);
+                        if (!rowNode) {
+                          return null;
+                        }
+                        let isSelectedBranch = false;
+                        if (selectedNodeId && selectedNodeId !== row.nodeId) {
+                          let cursor = parentIdByNodeId.get(row.nodeId) ?? null;
+                          while (cursor) {
+                            if (cursor === selectedNodeId) {
+                              isSelectedBranch = true;
+                              break;
+                            }
+                            cursor = parentIdByNodeId.get(cursor) ?? null;
+                          }
+                        }
+                        return (
+                          <TreeRowItem
+                            key={row.nodeId}
+                            row={row}
+                            node={rowNode}
+                            selectedId={selectedNodeId}
+                            onSelect={(id) => selectNode(id)}
+                            isSelectedBranch={isSelectedBranch}
+                            collapsedIds={collapsedLayerIds}
+                            onToggleCollapse={toggleLayerCollapse}
+                            dragActiveId={treeDnd.dragActiveId}
+                            dragOverSlot={treeDnd.dragOverSlot}
+                            registerRowEl={registerRowEl}
+                          />
+                        );
+                      })}
+                      <TreeDropIndicator
+                        containerRef={treeBoxRef}
+                        rowEls={rowElsRef}
+                        slot={treeDnd.dragOverSlot}
+                        parentIdByNodeId={parentIdByNodeId}
+                      />
+                      <DragOverlay dropAnimation={null}>
+                        {treeDnd.dragActiveId && flatNodesById.get(treeDnd.dragActiveId) ? (
+                          <div className="ec-tree-drag-overlay rounded-md text-[13px]">
+                            <TreeDragOverlayRow
+                              node={flatNodesById.get(treeDnd.dragActiveId) as PageNode}
+                            />
+                          </div>
+                        ) : null}
+                      </DragOverlay>
+                    </DndContext>
                   </div>
                 )}
+                {!treeDndEnabled ? (
+                  <p className="ec-text-faint text-[11px] leading-relaxed">Drag & drop is disabled while layer search is active.</p>
+                ) : null}
               </div>
             ) : null}
 
@@ -3497,6 +4034,100 @@ export function EditorApp({ initialSlug }: { initialSlug: string }) {
                     onChange={(e) => updateNodeName(selectedNode.id, e.target.value)}
                   />
                 </label>
+                {selectedNode.id === document?.root.id ? (
+                  <button
+                    type="button"
+                    className="ec-btn-secondary w-full rounded-md px-2.5 py-1.5 text-[12px] transition-colors"
+                    title="Append pasted subtree under Page (⌘V)"
+                    onClick={() => {
+                      void navigator.clipboard
+                        .readText()
+                        .then((text) => {
+                          pasteFromClipboardText(text);
+                        })
+                        .catch(() => {});
+                    }}
+                  >
+                    Paste layer
+                  </button>
+                ) : null}
+                {selectedNode.id !== document?.root.id ? (
+                  <div className="grid grid-cols-2 gap-2">
+                    <button
+                      type="button"
+                      className="ec-btn-secondary w-full rounded-md px-2.5 py-1.5 text-[12px] transition-colors disabled:cursor-not-allowed"
+                      title="Copy subtree (⌘C)"
+                      onClick={() => {
+                        const payload = getClipboardPayloadForSelectedNode();
+                        if (payload) {
+                          void navigator.clipboard.writeText(payload);
+                        }
+                      }}
+                    >
+                      Copy layer
+                    </button>
+                    <button
+                      type="button"
+                      className="ec-btn-secondary w-full rounded-md px-2.5 py-1.5 text-[12px] transition-colors"
+                      title="Cut subtree — copy then remove (⌘X)"
+                      onClick={() => {
+                        const payload = getClipboardPayloadForSelectedNode();
+                        if (!payload) {
+                          return;
+                        }
+                        void navigator.clipboard
+                          .writeText(payload)
+                          .then(() => {
+                            removeSelectedNode();
+                          })
+                          .catch(() => {});
+                      }}
+                    >
+                      Cut layer
+                    </button>
+                    <button
+                      type="button"
+                      className="ec-btn-secondary w-full rounded-md px-2.5 py-1.5 text-[12px] transition-colors"
+                      title="Paste after selection (⌘V)"
+                      onClick={() => {
+                        void navigator.clipboard
+                          .readText()
+                          .then((text) => {
+                            pasteFromClipboardText(text);
+                          })
+                          .catch(() => {});
+                      }}
+                    >
+                      Paste layer
+                    </button>
+                    <button type="button" className="ec-props-action-btn w-full text-[12px]" onClick={() => duplicateSelectedNode()}>
+                      Duplicate layer
+                    </button>
+                    <button
+                      type="button"
+                      className="ec-btn-secondary w-full rounded-md px-2.5 py-1.5 text-[12px] transition-colors disabled:cursor-not-allowed"
+                      onClick={() => moveSelectedNode("up")}
+                      disabled={!canMoveSelectedNodeUp}
+                    >
+                      Move up
+                    </button>
+                    <button
+                      type="button"
+                      className="ec-btn-secondary w-full rounded-md px-2.5 py-1.5 text-[12px] transition-colors disabled:cursor-not-allowed"
+                      onClick={() => moveSelectedNode("down")}
+                      disabled={!canMoveSelectedNodeDown}
+                    >
+                      Move down
+                    </button>
+                    <button
+                      type="button"
+                      className="ec-props-danger-btn col-span-2 w-full text-[12px]"
+                      onClick={() => removeSelectedNode()}
+                    >
+                      Remove layer
+                    </button>
+                  </div>
+                ) : null}
                 <details className="ec-props-internal-id min-w-0 text-[11px]">
                   <summary className="ec-text-muted cursor-pointer select-none">Internal ID (for codegen)</summary>
                   <code className="ec-props-internal-id-code mt-1 block break-all font-mono text-[10px] leading-snug">

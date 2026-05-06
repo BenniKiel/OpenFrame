@@ -173,4 +173,327 @@ describe("useEditorStore", () => {
     expect(s.selectedNodeId).toBe(s.document?.root.children[1]?.id);
     expect(s.isDirty).toBe(true);
   });
+
+  it("addChildTo can keep parent selected for batch insert", () => {
+    const parsed = parsePageDocument(sampleDoc);
+    expect(parsed.ok).toBe(true);
+    if (!parsed.ok) {
+      return;
+    }
+
+    useEditorStore.setState({
+      document: parsed.data,
+      slug: "home",
+      selectedNodeId: "root",
+      status: "idle",
+      isDirty: false,
+      lastError: null,
+    });
+
+    useEditorStore.getState().addChildTo("root", "text", { selectNew: false });
+    useEditorStore.getState().addChildTo("root", "text", { selectNew: false });
+
+    const s = useEditorStore.getState();
+    expect(s.document?.root.children).toHaveLength(3);
+    expect(s.selectedNodeId).toBe("root");
+    expect(s.isDirty).toBe(true);
+  });
+
+  it("duplicateSelectedNode clones selected node with new id", () => {
+    const parsed = parsePageDocument(sampleDoc);
+    expect(parsed.ok).toBe(true);
+    if (!parsed.ok) {
+      return;
+    }
+
+    useEditorStore.setState({
+      document: parsed.data,
+      slug: "home",
+      selectedNodeId: "t1",
+      status: "idle",
+      isDirty: false,
+      lastError: null,
+    });
+
+    useEditorStore.getState().duplicateSelectedNode();
+
+    const s = useEditorStore.getState();
+    expect(s.document?.root.children).toHaveLength(2);
+    expect(s.document?.root.children[0]?.id).toBe("t1");
+    expect(s.document?.root.children[1]?.id).not.toBe("t1");
+    expect(s.document?.root.children[1]?.type).toBe("text");
+    expect(s.document?.root.children[1]?.props.text).toBe("Hi");
+    expect(s.selectedNodeId).toBe(s.document?.root.children[1]?.id);
+    expect(s.isDirty).toBe(true);
+  });
+
+  it("duplicateSelectedNode ignores root selection", () => {
+    const parsed = parsePageDocument(sampleDoc);
+    expect(parsed.ok).toBe(true);
+    if (!parsed.ok) {
+      return;
+    }
+
+    useEditorStore.setState({
+      document: parsed.data,
+      slug: "home",
+      selectedNodeId: "root",
+      status: "idle",
+      isDirty: false,
+      lastError: null,
+    });
+
+    useEditorStore.getState().duplicateSelectedNode();
+
+    const s = useEditorStore.getState();
+    expect(s.document?.root.children).toHaveLength(1);
+    expect(s.selectedNodeId).toBe("root");
+    expect(s.isDirty).toBe(false);
+  });
+
+  it("getClipboardPayloadForSelectedNode encodes selected subtree", () => {
+    const parsed = parsePageDocument(sampleDoc);
+    expect(parsed.ok).toBe(true);
+    if (!parsed.ok) {
+      return;
+    }
+
+    useEditorStore.setState({
+      document: parsed.data,
+      slug: "home",
+      selectedNodeId: "t1",
+      status: "idle",
+      isDirty: false,
+      lastError: null,
+    });
+
+    const payload = useEditorStore.getState().getClipboardPayloadForSelectedNode();
+    expect(payload).toContain("openframe:layer:v1");
+    expect(payload).toContain('"type":"text"');
+  });
+
+  it("pasteFromClipboardText inserts after selected node", () => {
+    const parsed = parsePageDocument(sampleDoc);
+    expect(parsed.ok).toBe(true);
+    if (!parsed.ok) {
+      return;
+    }
+
+    useEditorStore.setState({
+      document: parsed.data,
+      slug: "home",
+      selectedNodeId: "t1",
+      status: "idle",
+      isDirty: false,
+      lastError: null,
+    });
+
+    const payload = useEditorStore.getState().getClipboardPayloadForSelectedNode();
+    expect(payload).not.toBeNull();
+
+    const ok = useEditorStore.getState().pasteFromClipboardText(payload ?? "");
+    expect(ok).toBe(true);
+
+    const s = useEditorStore.getState();
+    expect(s.document?.root.children).toHaveLength(2);
+    expect(s.document?.root.children[0]?.id).toBe("t1");
+    expect(s.document?.root.children[1]?.type).toBe("text");
+    expect(s.document?.root.children[1]?.props.text).toBe("Hi");
+    expect(s.document?.root.children[1]?.id).not.toBe("t1");
+    expect(s.selectedNodeId).toBe(s.document?.root.children[1]?.id);
+    expect(s.isDirty).toBe(true);
+  });
+
+  it("pasteFromClipboardText appends under root when root is selected", () => {
+    const parsed = parsePageDocument(sampleDoc);
+    expect(parsed.ok).toBe(true);
+    if (!parsed.ok) {
+      return;
+    }
+
+    useEditorStore.setState({
+      document: parsed.data,
+      slug: "home",
+      selectedNodeId: "t1",
+      status: "idle",
+      isDirty: false,
+      lastError: null,
+    });
+
+    const payload = useEditorStore.getState().getClipboardPayloadForSelectedNode();
+    expect(payload).not.toBeNull();
+
+    useEditorStore.setState({ selectedNodeId: "root" });
+    const ok = useEditorStore.getState().pasteFromClipboardText(payload ?? "");
+    expect(ok).toBe(true);
+
+    const s = useEditorStore.getState();
+    expect(s.document?.root.children).toHaveLength(2);
+    expect(s.selectedNodeId).not.toBe("t1");
+  });
+
+  it("pasteFromClipboardText rejects garbage", () => {
+    const parsed = parsePageDocument(sampleDoc);
+    expect(parsed.ok).toBe(true);
+    if (!parsed.ok) {
+      return;
+    }
+
+    useEditorStore.setState({
+      document: parsed.data,
+      slug: "home",
+      selectedNodeId: "t1",
+      status: "idle",
+      isDirty: false,
+      lastError: null,
+    });
+
+    expect(useEditorStore.getState().pasteFromClipboardText("not-openframe")).toBe(false);
+    expect(useEditorStore.getState().document?.root.children).toHaveLength(1);
+  });
+
+  it("undo and redo restore latest structural change", () => {
+    const parsed = parsePageDocument(sampleDoc);
+    expect(parsed.ok).toBe(true);
+    if (!parsed.ok) {
+      return;
+    }
+
+    useEditorStore.setState({
+      document: parsed.data,
+      slug: "home",
+      selectedNodeId: "root",
+      status: "idle",
+      isDirty: false,
+      lastError: null,
+    });
+
+    useEditorStore.getState().addChildTo("root", "frame");
+    expect(useEditorStore.getState().document?.root.children).toHaveLength(2);
+    expect(useEditorStore.getState().canUndo()).toBe(true);
+
+    useEditorStore.getState().undo();
+    expect(useEditorStore.getState().document?.root.children).toHaveLength(1);
+    expect(useEditorStore.getState().canRedo()).toBe(true);
+
+    useEditorStore.getState().redo();
+    expect(useEditorStore.getState().document?.root.children).toHaveLength(2);
+  });
+
+  it("moveSelectedNode reorders siblings and respects boundaries", () => {
+    const doc = {
+      version: 1 as const,
+      root: {
+        id: "root",
+        type: "container" as const,
+        props: {},
+        children: [
+          { id: "a", type: "text" as const, props: { text: "A" }, children: [] },
+          { id: "b", type: "text" as const, props: { text: "B" }, children: [] },
+          { id: "c", type: "text" as const, props: { text: "C" }, children: [] },
+        ],
+      },
+    };
+    const parsed = parsePageDocument(doc);
+    expect(parsed.ok).toBe(true);
+    if (!parsed.ok) {
+      return;
+    }
+
+    useEditorStore.setState({
+      document: parsed.data,
+      slug: "home",
+      selectedNodeId: "b",
+      status: "idle",
+      isDirty: false,
+      lastError: null,
+    });
+
+    expect(useEditorStore.getState().canMoveSelectedNode("up")).toBe(true);
+    expect(useEditorStore.getState().canMoveSelectedNode("down")).toBe(true);
+
+    useEditorStore.getState().moveSelectedNode("up");
+    expect(useEditorStore.getState().document?.root.children.map((n) => n.id)).toEqual(["b", "a", "c"]);
+
+    useEditorStore.getState().moveSelectedNode("up");
+    expect(useEditorStore.getState().document?.root.children.map((n) => n.id)).toEqual(["b", "a", "c"]);
+    expect(useEditorStore.getState().canMoveSelectedNode("up")).toBe(false);
+  });
+
+  it("reorderNodesByIds can move between parents when allowed", () => {
+    const doc = {
+      version: 1 as const,
+      root: {
+        id: "root",
+        type: "container" as const,
+        props: {},
+        children: [
+          { id: "a", type: "text" as const, props: { text: "A" }, children: [] },
+          { id: "b", type: "text" as const, props: { text: "B" }, children: [] },
+          {
+            id: "group",
+            type: "frame" as const,
+            props: {},
+            children: [{ id: "c", type: "text" as const, props: { text: "C" }, children: [] }],
+          },
+        ],
+      },
+    };
+    const parsed = parsePageDocument(doc);
+    expect(parsed.ok).toBe(true);
+    if (!parsed.ok) {
+      return;
+    }
+
+    useEditorStore.setState({
+      document: parsed.data,
+      slug: "home",
+      selectedNodeId: "b",
+      status: "idle",
+      isDirty: false,
+      lastError: null,
+    });
+
+    useEditorStore.getState().reorderNodesByIds("a", "b");
+    expect(useEditorStore.getState().document?.root.children.map((n) => n.id)).toEqual(["b", "a", "group"]);
+
+    useEditorStore.getState().reorderNodesByIds("c", "a");
+    expect(useEditorStore.getState().document?.root.children.map((n) => n.id)).toEqual(["b", "a", "c", "group"]);
+  });
+
+  it("reorderNodesByIds blocks section under non-root parent", () => {
+    const doc = {
+      version: 1 as const,
+      root: {
+        id: "root",
+        type: "container" as const,
+        props: {},
+        children: [
+          { id: "sec", type: "section" as const, props: {}, children: [] },
+          {
+            id: "group",
+            type: "frame" as const,
+            props: {},
+            children: [{ id: "leaf", type: "text" as const, props: { text: "x" }, children: [] }],
+          },
+        ],
+      },
+    };
+    const parsed = parsePageDocument(doc);
+    expect(parsed.ok).toBe(true);
+    if (!parsed.ok) {
+      return;
+    }
+    useEditorStore.setState({
+      document: parsed.data,
+      slug: "home",
+      selectedNodeId: "sec",
+      status: "idle",
+      isDirty: false,
+      lastError: null,
+    });
+
+    useEditorStore.getState().reorderNodesByIds("sec", "leaf");
+    expect(useEditorStore.getState().document?.root.children.map((n) => n.id)).toEqual(["sec", "group"]);
+  });
 });

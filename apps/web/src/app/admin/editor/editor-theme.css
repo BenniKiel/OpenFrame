@@ -392,6 +392,7 @@
 }
 
 [data-editor-chrome] .ec-tree-box {
+  position: relative;
   border: none;
   background: transparent;
   padding: 2px 0;
@@ -401,6 +402,17 @@
   border-radius: 6px;
   border-left: none;
   color: var(--editor-text-muted);
+}
+[data-editor-chrome] .ec-tree-row-main {
+  border: none;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  font: inherit;
+  padding: 0;
+}
+[data-editor-chrome] .ec-tree-row-main:active {
+  cursor: grabbing;
 }
 [data-editor-chrome] .ec-tree-btn:hover {
   background-color: var(--editor-tree-hover-bg);
@@ -413,11 +425,81 @@
   font-weight: 500;
 }
 
+[data-editor-chrome] .ec-tree-selected-subtree {
+  margin: 2px 0;
+  border-radius: 8px;
+  background-color: rgb(88 180 255 / 0.08);
+  box-shadow: inset 0 0 0 1px rgb(88 180 255 / 0.16);
+}
+
+[data-editor-chrome] .ec-tree-btn-descendant {
+  color: rgb(188 207 231 / 0.95);
+}
+/* Dragging item: fade original in place while DragOverlay follows cursor */
+[data-editor-chrome] .ec-tree-btn-dragging {
+  opacity: 0.32;
+}
+
+/* Single global drop indicator (depth-aware horizontal line, Framer-style) */
+[data-editor-chrome] .ec-tree-drop-line {
+  position: absolute;
+  height: 2px;
+  margin-top: -1px;
+  background: var(--editor-accent);
+  border-radius: 2px;
+  z-index: 20;
+  pointer-events: none;
+  box-shadow: 0 0 0 1px rgb(88 180 255 / 0.25);
+}
+[data-editor-chrome] .ec-tree-drop-line::before {
+  content: "";
+  position: absolute;
+  left: -3px;
+  top: -3px;
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: var(--editor-accent);
+  box-shadow: 0 0 0 1px rgb(88 180 255 / 0.25);
+}
+
+/* Drop indicator: INSIDE highlight (glow outline on the row itself) */
+[data-editor-chrome] .ec-tree-btn-drop-inside {
+  background-color: var(--editor-accent-surface) !important;
+  box-shadow: inset 0 0 0 1px var(--editor-accent-border);
+  border-radius: 6px;
+}
+
+[data-editor-chrome] .ec-tree-collapse-btn {
+  color: var(--editor-text-faint);
+}
+[data-editor-chrome] .ec-tree-collapse-btn:hover {
+  background-color: rgb(255 255 255 / 0.06);
+  color: var(--editor-text-secondary);
+}
+
 [data-editor-chrome] .ec-tree-type {
   color: var(--editor-tree-type-idle);
 }
 [data-editor-chrome] .ec-tree-btn-selected .ec-tree-type {
   color: var(--editor-accent-text);
+}
+[data-editor-chrome] .ec-tree-btn-descendant .ec-tree-type {
+  color: rgb(126 172 214 / 0.95);
+}
+
+[data-editor-chrome] .ec-tree-drag-overlay {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid var(--editor-accent-border);
+  background-color: rgb(24 31 41 / 0.97);
+  color: var(--editor-text);
+  box-shadow: 0 8px 24px rgb(0 0 0 / 0.42);
+  cursor: grabbing;
+}
+[data-editor-chrome] .ec-tree-drag-overlay-row {
+  border-radius: 4px;
+  white-space: nowrap;
 }
 
 [data-editor-chrome] .ec-tree-label,

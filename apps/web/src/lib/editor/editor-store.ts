@@ -3,6 +3,7 @@ import { immer } from "zustand/middleware/immer";
 import type { ZodError } from "zod";
 
 import {
+  pageNodeSchema,
   parsePageDocument,
   type OpenframePageDocument,
   type PageMeta,
@@ -20,8 +21,18 @@ import { defaultSectionPropsRecord } from "@/lib/preview/section-block";
 import { defaultSplitPropsRecord } from "@/lib/preview/split-block";
 import { defaultTextPropsRecord } from "@/lib/preview/text-block";
 
+import { decodeLayerClipboard, encodeLayerClipboard } from "./layer-clipboard";
 import { getStarterPageDocument } from "./starter-document";
-import { findNodeById, removeNodeById } from "./tree";
+import {
+  canMoveNodeById,
+  findNodeById,
+  moveNodeById,
+  moveNodeByIds,
+  removeNodeById,
+  type ReorderPlacement,
+  type MoveDirection,
+} from "./tree";
+import { canParentAcceptChild } from "./tree-rules";
 
 export type EditorStatus = "idle" | "loading" | "saving" | "error";
 
@@ -57,6 +68,14 @@ export type EditorState = {
   lastError: string | null;
   isDirty: boolean;
   previewNonce: number;
+  historyPast: EditorHistorySnapshot[];
+  historyFuture: EditorHistorySnapshot[];
+};
+
+type EditorHistorySnapshot = {
+  document: OpenframePageDocument | null;
+  selectedNodeId: string | null;
+  isDirty: boolean;
 };
 
 export type EditorChildKind =
@@ -70,6 +89,11 @@ export type EditorChildKind =
   | "split"
   | "card";
 
+type AddChildOptions = {
+  /** When false, keep parent selected to support fast multi-add flows. */
+  selectNew?: boolean;
+};
+
 type EditorActions = {
   setSlug: (slug: string) => void;
   selectNode: (id: string | null) => void;
@@ -79,8 +103,21 @@ type EditorActions = {
   /** Merge or clear top-level `theme` / `meta` on the page document (Phase 3). */
   patchPageDocument: (patch: { theme?: Partial<PageTheme> | null; meta?: Partial<PageMeta> | null }) => void;
   removeSelectedNode: () => void;
+  /** Duplicate currently selected non-root node (deep clone with fresh IDs) and select the clone. */
+  duplicateSelectedNode: () => void;
+  /** Serialized OpenFrame layer clipboard (`openframe:layer:v1` + JSON), or null if nothing to copy. */
+  getClipboardPayloadForSelectedNode: () => string | null;
+  /** Paste a subtree from clipboard text (see `decodeLayerClipboard`) after selection, or append under root if root is selected. */
+  pasteFromClipboardText: (text: string) => boolean;
+  reorderNodesByIds: (activeId: string, overId: string, placement?: ReorderPlacement) => void;
+  moveSelectedNode: (direction: MoveDirection) => void;
+  canMoveSelectedNode: (direction: MoveDirection) => boolean;
+  undo: () => void;
+  redo: () => void;
+  canUndo: () => boolean;
+  canRedo: () => boolean;
   /** Insert a child under a layout-capable parent (`container`, `frame`, `section`, `split`, `card`). */
-  addChildTo: (parentId: string, kind: EditorChildKind) => void;
+  addChildTo: (parentId: string, kind: EditorChildKind, options?: AddChildOptions) => void;
   /** @deprecated Use {@link addChildTo} with `"text"`. */
   addTextChildTo: (parentId: string) => void;
   loadPage: (slug: string) => Promise<void>;
@@ -97,9 +134,52 @@ const initialState: EditorState = {
   lastError: null,
   isDirty: false,
   previewNonce: 0,
+  historyPast: [],
+  historyFuture: [],
 };
 
 export type EditorStore = EditorState & EditorActions;
+
+function createEditorNodeId(kindHint: string): string {
+  return typeof crypto !== "undefined" && "randomUUID" in crypto ? crypto.randomUUID() : `${kindHint}-${Date.now()}`;
+}
+
+function cloneNodeWithFreshIds(node: PageNode): PageNode {
+  // `node` can be an Immer draft proxy; JSON clone keeps props plain and serializable.
+  const propsCopy = JSON.parse(JSON.stringify(node.props)) as Record<string, unknown>;
+  return {
+    id: createEditorNodeId(node.type),
+    type: node.type,
+    props: propsCopy,
+    name: node.name,
+    children: node.children.map(cloneNodeWithFreshIds),
+  };
+}
+
+function cloneDocumentPlain(doc: OpenframePageDocument | null): OpenframePageDocument | null {
+  if (!doc) {
+    return null;
+  }
+  return JSON.parse(JSON.stringify(doc)) as OpenframePageDocument;
+}
+
+const HISTORY_LIMIT = 100;
+
+function captureHistorySnapshot(state: Pick<EditorState, "document" | "selectedNodeId" | "isDirty">): EditorHistorySnapshot {
+  return {
+    document: cloneDocumentPlain(state.document),
+    selectedNodeId: state.selectedNodeId,
+    isDirty: state.isDirty,
+  };
+}
+
+function pushHistoryBeforeChange(draft: EditorState, before: EditorHistorySnapshot) {
+  draft.historyPast.push(before);
+  if (draft.historyPast.length > HISTORY_LIMIT) {
+    draft.historyPast.splice(0, draft.historyPast.length - HISTORY_LIMIT);
+  }
+  draft.historyFuture = [];
+}
 
 export const useEditorStore = create<EditorStore>()(
   immer((set, get) => ({
@@ -120,13 +200,21 @@ export const useEditorStore = create<EditorStore>()(
         if (!draft.document) {
           return;
         }
+        const before = captureHistorySnapshot(get());
         const trimmed = name.trim().slice(0, 128);
+        let changed = false;
         function walk(node: PageNode): boolean {
           if (node.id === nodeId) {
             if (trimmed === "") {
-              delete node.name;
+              if (node.name !== undefined) {
+                delete node.name;
+                changed = true;
+              }
             } else {
-              node.name = trimmed;
+              if (node.name !== trimmed) {
+                node.name = trimmed;
+                changed = true;
+              }
             }
             return true;
           }
@@ -137,7 +225,8 @@ export const useEditorStore = create<EditorStore>()(
           }
           return false;
         }
-        if (walk(draft.document.root)) {
+        if (walk(draft.document.root) && changed) {
+          pushHistoryBeforeChange(draft, before);
           draft.isDirty = true;
         }
       }),
@@ -147,9 +236,16 @@ export const useEditorStore = create<EditorStore>()(
         if (!draft.document) {
           return;
         }
+        const before = captureHistorySnapshot(get());
+        let changed = false;
         function walk(node: PageNode): boolean {
           if (node.id === nodeId) {
-            Object.assign(node.props, patch);
+            for (const [k, v] of Object.entries(patch)) {
+              if (!Object.is((node.props as Record<string, unknown>)[k], v)) {
+                (node.props as Record<string, unknown>)[k] = v;
+                changed = true;
+              }
+            }
             return true;
           }
           for (const child of node.children) {
@@ -159,8 +255,10 @@ export const useEditorStore = create<EditorStore>()(
           }
           return false;
         }
-        walk(draft.document.root);
-        draft.isDirty = true;
+        if (walk(draft.document.root) && changed) {
+          pushHistoryBeforeChange(draft, before);
+          draft.isDirty = true;
+        }
       }),
 
     patchPageDocument: (patch) =>
@@ -168,21 +266,40 @@ export const useEditorStore = create<EditorStore>()(
         if (!draft.document) {
           return;
         }
+        const before = captureHistorySnapshot(get());
+        let changed = false;
         if (patch.theme !== undefined) {
           if (patch.theme === null) {
-            delete draft.document.theme;
+            if (draft.document.theme !== undefined) {
+              delete draft.document.theme;
+              changed = true;
+            }
           } else {
-            draft.document.theme = { ...(draft.document.theme ?? {}), ...patch.theme };
+            const nextTheme = { ...(draft.document.theme ?? {}), ...patch.theme };
+            if (JSON.stringify(nextTheme) !== JSON.stringify(draft.document.theme ?? {})) {
+              draft.document.theme = nextTheme;
+              changed = true;
+            }
           }
         }
         if (patch.meta !== undefined) {
           if (patch.meta === null) {
-            delete draft.document.meta;
+            if (draft.document.meta !== undefined) {
+              delete draft.document.meta;
+              changed = true;
+            }
           } else {
-            draft.document.meta = { ...(draft.document.meta ?? {}), ...patch.meta };
+            const nextMeta = { ...(draft.document.meta ?? {}), ...patch.meta };
+            if (JSON.stringify(nextMeta) !== JSON.stringify(draft.document.meta ?? {})) {
+              draft.document.meta = nextMeta;
+              changed = true;
+            }
           }
         }
-        draft.isDirty = true;
+        if (changed) {
+          pushHistoryBeforeChange(draft, before);
+          draft.isDirty = true;
+        }
       }),
 
     removeSelectedNode: () =>
@@ -194,17 +311,195 @@ export const useEditorStore = create<EditorStore>()(
         if (id === draft.document.root.id) {
           return;
         }
+        const before = captureHistorySnapshot(get());
         if (removeNodeById(draft.document.root, id)) {
+          pushHistoryBeforeChange(draft, before);
           draft.selectedNodeId = draft.document.root.id;
           draft.isDirty = true;
         }
       }),
 
-    addChildTo: (parentId, kind) =>
+    duplicateSelectedNode: () =>
+      set((draft) => {
+        const id = draft.selectedNodeId;
+        if (!draft.document || !id || id === draft.document.root.id) {
+          return;
+        }
+        const before = captureHistorySnapshot(get());
+        function walk(parent: PageNode): boolean {
+          const idx = parent.children.findIndex((child) => child.id === id);
+          if (idx >= 0) {
+            const duplicated = cloneNodeWithFreshIds(parent.children[idx]);
+            parent.children.splice(idx + 1, 0, duplicated);
+            pushHistoryBeforeChange(draft, before);
+            draft.selectedNodeId = duplicated.id;
+            draft.isDirty = true;
+            return true;
+          }
+          for (const child of parent.children) {
+            if (walk(child)) {
+              return true;
+            }
+          }
+          return false;
+        }
+        walk(draft.document.root);
+      }),
+
+    getClipboardPayloadForSelectedNode: () => {
+      const { document, selectedNodeId } = get();
+      if (!document || !selectedNodeId || selectedNodeId === document.root.id) {
+        return null;
+      }
+      const node = findNodeById(document.root, selectedNodeId);
+      if (!node) {
+        return null;
+      }
+      const plain = JSON.parse(JSON.stringify(node)) as PageNode;
+      return encodeLayerClipboard(plain);
+    },
+
+    pasteFromClipboardText: (text) => {
+      const decoded = decodeLayerClipboard(text);
+      if (!decoded) {
+        return false;
+      }
+      const parsed = pageNodeSchema.safeParse(decoded);
+      if (!parsed.success) {
+        return false;
+      }
+
+      let inserted = false;
       set((draft) => {
         if (!draft.document) {
           return;
         }
+        const fresh = cloneNodeWithFreshIds(parsed.data);
+        const selId = draft.selectedNodeId;
+
+        if (selId === draft.document.root.id) {
+          if (!canParentAcceptChild(draft.document.root, fresh)) {
+            return;
+          }
+          const before = captureHistorySnapshot(get());
+          draft.document.root.children.push(fresh);
+          pushHistoryBeforeChange(draft, before);
+          draft.selectedNodeId = fresh.id;
+          draft.isDirty = true;
+          inserted = true;
+          return;
+        }
+
+        if (!selId) {
+          return;
+        }
+
+        function walk(parent: PageNode): boolean {
+          const idx = parent.children.findIndex((c) => c.id === selId);
+          if (idx >= 0) {
+            if (!canParentAcceptChild(parent, fresh)) {
+              return false;
+            }
+            const before = captureHistorySnapshot(get());
+            parent.children.splice(idx + 1, 0, fresh);
+            pushHistoryBeforeChange(draft, before);
+            draft.selectedNodeId = fresh.id;
+            draft.isDirty = true;
+            return true;
+          }
+          for (const child of parent.children) {
+            if (walk(child)) {
+              return true;
+            }
+          }
+          return false;
+        }
+
+        inserted = walk(draft.document.root);
+      });
+
+      return inserted;
+    },
+
+    reorderNodesByIds: (activeId, overId, placement = "after") =>
+      set((draft) => {
+        if (!draft.document || !activeId || !overId || activeId === overId) {
+          return;
+        }
+        const before = captureHistorySnapshot(get());
+        if (moveNodeByIds(draft.document.root, activeId, overId, placement, canParentAcceptChild)) {
+          pushHistoryBeforeChange(draft, before);
+          draft.selectedNodeId = activeId;
+          draft.isDirty = true;
+        }
+      }),
+
+    moveSelectedNode: (direction) =>
+      set((draft) => {
+        const id = draft.selectedNodeId;
+        if (!draft.document || !id || id === draft.document.root.id) {
+          return;
+        }
+        const before = captureHistorySnapshot(get());
+        if (moveNodeById(draft.document.root, id, direction)) {
+          pushHistoryBeforeChange(draft, before);
+          draft.isDirty = true;
+        }
+      }),
+
+    canMoveSelectedNode: (direction) => {
+      const { document, selectedNodeId } = get();
+      if (!document || !selectedNodeId || selectedNodeId === document.root.id) {
+        return false;
+      }
+      return canMoveNodeById(document.root, selectedNodeId, direction);
+    },
+
+    undo: () =>
+      set((draft) => {
+        const previous = draft.historyPast.pop();
+        if (!previous) {
+          return;
+        }
+        draft.historyFuture.push(
+          captureHistorySnapshot({
+            document: draft.document,
+            selectedNodeId: draft.selectedNodeId,
+            isDirty: draft.isDirty,
+          }),
+        );
+        draft.document = cloneDocumentPlain(previous.document);
+        draft.selectedNodeId = previous.selectedNodeId;
+        draft.isDirty = previous.isDirty;
+      }),
+
+    redo: () =>
+      set((draft) => {
+        const next = draft.historyFuture.pop();
+        if (!next) {
+          return;
+        }
+        draft.historyPast.push(
+          captureHistorySnapshot({
+            document: draft.document,
+            selectedNodeId: draft.selectedNodeId,
+            isDirty: draft.isDirty,
+          }),
+        );
+        draft.document = cloneDocumentPlain(next.document);
+        draft.selectedNodeId = next.selectedNodeId;
+        draft.isDirty = next.isDirty;
+      }),
+
+    canUndo: () => get().historyPast.length > 0,
+    canRedo: () => get().historyFuture.length > 0,
+
+    addChildTo: (parentId, kind, options) =>
+      set((draft) => {
+        if (!draft.document) {
+          return;
+        }
+        const before = captureHistorySnapshot(get());
         const parent = findNodeById(draft.document.root, parentId);
         if (
           !parent ||
@@ -216,10 +511,7 @@ export const useEditorStore = create<EditorStore>()(
         ) {
           return;
         }
-        const id =
-          typeof crypto !== "undefined" && "randomUUID" in crypto
-            ? crypto.randomUUID()
-            : `${kind}-${Date.now()}`;
+        const id = createEditorNodeId(kind);
 
         let newNode: PageNode;
         switch (kind) {
@@ -257,7 +549,8 @@ export const useEditorStore = create<EditorStore>()(
         }
 
         parent.children.push(newNode);
-        draft.selectedNodeId = id;
+        pushHistoryBeforeChange(draft, before);
+        draft.selectedNodeId = options?.selectNew === false ? parentId : id;
         draft.isDirty = true;
       }),
 
@@ -292,6 +585,8 @@ export const useEditorStore = create<EditorStore>()(
             draft.status = "idle";
             draft.isDirty = true;
             draft.lastError = null;
+            draft.historyPast = [];
+            draft.historyFuture = [];
           });
           return;
         }
@@ -329,6 +624,8 @@ export const useEditorStore = create<EditorStore>()(
           draft.status = "idle";
           draft.isDirty = false;
           draft.lastError = null;
+          draft.historyPast = [];
+          draft.historyFuture = [];
         });
       } catch (e) {
         set((draft) => {

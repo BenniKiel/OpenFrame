@@ -32,4 +32,10 @@ describe("normalizeSectionProps", () => {
     expect(normalizeSectionProps({}).timelinePreset).toBe("none");
     expect(normalizeSectionProps({ motionEngine: "gsap" }).motionEngine).toBe("gsap");
   });
+
+  it("normalizes section paddingY with md fallback", () => {
+    expect(normalizeSectionProps({}).paddingY).toBe("md");
+    expect(normalizeSectionProps({ paddingY: "lg" }).paddingY).toBe("lg");
+    expect(normalizeSectionProps({ paddingY: "weird" }).paddingY).toBe("md");
+  });
 });
