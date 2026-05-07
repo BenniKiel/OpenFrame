@@ -1,5 +1,11 @@
 # @benjaminkiel/openframe
 
+## 0.2.2
+
+### Patch Changes
+
+- 66bafdd: Switch npm publish target from `@openframe/core` to `@benjaminkiel/openframe` (user scope), and update release/runbook references accordingly.
+
 ## 0.2.1
 
 ### Patch Changes
