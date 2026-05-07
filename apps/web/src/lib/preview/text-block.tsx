@@ -9,6 +9,7 @@ import {
   type TextTone,
   type TrackingToken,
 } from "./design-tokens";
+import { buildTextResponsiveCss, parseTextWhen } from "./typography-responsive";
 
 export type TextRole = "p" | "span";
 
@@ -121,6 +122,8 @@ export function defaultTextPropsRecord(): Record<string, unknown> {
 
 export function TextBlock({ node }: BlockProps) {
   const p = normalizeTextProps(node.props);
+  const when = parseTextWhen(node.props.when);
+  const responsiveCss = buildTextResponsiveCss(node.id, when);
   const style: CSSProperties = {};
   if (p.maxWidth != null) {
     style.maxWidth = `${p.maxWidth}px`;
@@ -137,14 +140,20 @@ export function TextBlock({ node }: BlockProps) {
     .join(" ");
   if (p.as === "span") {
     return (
-      <span data-of-node-id={node.id} className={className} style={style}>
-        {p.text}
-      </span>
+      <>
+        {responsiveCss ? <style>{responsiveCss}</style> : null}
+        <span data-of-node-id={node.id} className={className} style={style}>
+          {p.text}
+        </span>
+      </>
     );
   }
   return (
-    <p data-of-node-id={node.id} className={className} style={style}>
-      {p.text}
-    </p>
+    <>
+      {responsiveCss ? <style>{responsiveCss}</style> : null}
+      <p data-of-node-id={node.id} className={className} style={style}>
+        {p.text}
+      </p>
+    </>
   );
 }

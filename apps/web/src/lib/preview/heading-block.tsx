@@ -9,9 +9,11 @@ import {
   type TextTone,
   type TrackingToken,
 } from "./design-tokens";
+import { buildHeadingResponsiveCss, parseHeadingWhen } from "./typography-responsive";
 
 export type HeadingLevel = 1 | 2 | 3 | 4 | 5 | 6;
 export type HeadingAlign = "start" | "center" | "end";
+export type HeadingSizeScale = "sm" | "base" | "lg" | "xl" | "2xl" | "3xl";
 
 const AS_TAGS = new Set(["h1", "h2", "h3", "h4", "h5", "h6", "p"]);
 
@@ -21,6 +23,7 @@ export type NormalizedHeadingProps = {
   /** Semantic tag override (`h1`–`h6` or `p`); default maps from `level`. */
   asTag: "h1" | "h2" | "h3" | "h4" | "h5" | "h6" | "p";
   align: HeadingAlign;
+  sizeScale: HeadingSizeScale | null;
   tone: TextTone;
   leading: LeadingToken;
   tracking: TrackingToken;
@@ -62,6 +65,14 @@ function clampLevel(v: unknown): HeadingLevel {
   return x as HeadingLevel;
 }
 
+function readSizeScale(v: unknown): HeadingSizeScale | null {
+  const s = typeof v === "string" ? v : "";
+  if (s === "sm" || s === "base" || s === "lg" || s === "xl" || s === "2xl" || s === "3xl") {
+    return s;
+  }
+  return null;
+}
+
 export function normalizeHeadingProps(props: Record<string, unknown>): NormalizedHeadingProps {
   const text = typeof props.text === "string" ? props.text : "";
   const level = clampLevel(props.level);
@@ -77,12 +88,13 @@ export function normalizeHeadingProps(props: Record<string, unknown>): Normalize
   const rawAlign = typeof props.align === "string" ? props.align : "";
   const align: HeadingAlign =
     rawAlign === "center" || rawAlign === "end" ? rawAlign : "start";
+  const sizeScale = readSizeScale(props.sizeScale);
 
   const tone = readTextTone(props.tone);
   const leading = readLeading(props.leading);
   const tracking = readTracking(props.tracking);
 
-  return { text, level, asTag, align, tone, leading, tracking };
+  return { text, level, asTag, align, sizeScale, tone, leading, tracking };
 }
 
 export function defaultHeadingPropsRecord(): Record<string, unknown> {
@@ -108,11 +120,22 @@ const LEVEL_SIZE_CLASS: Record<HeadingLevel, string> = {
   6: "text-base font-semibold",
 };
 
+const SCALE_SIZE_CLASS: Record<HeadingSizeScale, string> = {
+  sm: "text-xl font-semibold",
+  base: "text-2xl font-semibold",
+  lg: "text-3xl font-semibold",
+  xl: "text-4xl font-semibold",
+  "2xl": "text-5xl font-semibold",
+  "3xl": "text-6xl font-semibold",
+};
+
 export function HeadingBlock({ node }: BlockProps) {
   const p = normalizeHeadingProps(node.props);
+  const when = parseHeadingWhen(node.props.when);
+  const responsiveCss = buildHeadingResponsiveCss(node.id, when);
   const Tag = p.asTag as ElementType;
   const cls = [
-    LEVEL_SIZE_CLASS[p.level],
+    p.sizeScale ? SCALE_SIZE_CLASS[p.sizeScale] : LEVEL_SIZE_CLASS[p.level],
     HEADING_TONE_CLASS[p.tone],
     LEADING_CLASS[p.leading],
     TRACKING_CLASS[p.tracking],
@@ -120,8 +143,11 @@ export function HeadingBlock({ node }: BlockProps) {
     "max-w-full text-balance",
   ].join(" ");
   return (
-    <Tag data-of-node-id={node.id} className={cls}>
-      {p.text}
-    </Tag>
+    <>
+      {responsiveCss ? <style>{responsiveCss}</style> : null}
+      <Tag data-of-node-id={node.id} className={cls}>
+        {p.text}
+      </Tag>
+    </>
   );
 }

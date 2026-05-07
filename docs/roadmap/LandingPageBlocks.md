@@ -125,10 +125,13 @@ flowchart LR
 | # | Lieferung | Beschreibung |
 | - | --------- | ------------ |
 | 3.1 | **Design Tokens im Document** oder **Theme-Scope** | Farben, Typo-Skalen, Radius — begrenzte Enums statt freier Strings. Überlappt teilweise mit **Phase 1b**; sobald 1b umgesetzt ist, hier konsolidieren und ggf. Schema/Allowlist zusammenführen. |
-| 3.2 | **Breakpoint-Props** (optional `sm`/`md`/`lg`) | Spacing, Spalten, `hidden` — Datenmodell-Erweiterung + Normalisierung wie bei `frame`. |
+| 3.2 | **Breakpoint-Props** (optional `sm`/`md`/`lg`) | Spacing, Spalten, `hidden` — Datenmodell-Erweiterung + Normalisierung wie bei `frame`; Editor-Built-ins enthalten jetzt responsive Grid-Rezepte auf `when`-Basis (mobile-first). |
 | 3.3 | **Globale Site/SEO-Metadaten** | Pro Seite: `title`, `description`, OG-Bild — außerhalb oder als `PageMeta`-Erweiterung des Documents (Version bump planen). |
 
 **Exit-Kriterium Phase 3:** Gleicher Baum wirkt auf **Mobile und Desktop** kontrolliert unterschiedlich (sichtbar im Editor-Preview mit Breakpoints).
+
+**Zusatz (Dogfood):** Editor-Presets liefern jetzt neben responsive Grid-Rezepten auch ein **„Rounded media crop“**-Pattern (Frame-Radius + `overflow: hidden` + Image `fill/cover`) als One-Click-Startpunkt.
+Weitere Dogfood-Presets decken jetzt auch **Pricing Cards** ab (Monthly / Yearly-save Varianten), ohne sofort ein neues Core-Primitive `type: "pricing"` einzuführen.
 
 ## 10. Phase 4 (optional) — Motion & Scroll
 

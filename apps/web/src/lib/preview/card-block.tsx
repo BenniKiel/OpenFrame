@@ -5,9 +5,13 @@ export type NormalizedCardProps = {
   surface: FrameSurface;
   padding: number;
   radius: number;
+  interaction: CardInteraction;
 };
 
+export type CardInteraction = "none" | "lift" | "glow";
+
 const SURFACES: readonly FrameSurface[] = ["default", "muted", "transparent", "inverse", "accent"];
+const INTERACTIONS: readonly CardInteraction[] = ["none", "lift", "glow"];
 
 function readSurface(v: unknown): FrameSurface {
   const s = typeof v === "string" ? v : "";
@@ -27,6 +31,10 @@ export function normalizeCardProps(props: Record<string, unknown>): NormalizedCa
     surface: readSurface(props.surface),
     padding,
     radius,
+    interaction:
+      typeof props.interaction === "string" && (INTERACTIONS as readonly string[]).includes(props.interaction)
+        ? (props.interaction as CardInteraction)
+        : "none",
   };
 }
 
@@ -35,15 +43,22 @@ export function defaultCardPropsRecord(): Record<string, unknown> {
     surface: "default",
     padding: 20,
     radius: 12,
+    interaction: "none",
   };
 }
 
 export function CardBlock({ node, children }: BlockProps) {
   const p = normalizeCardProps(node.props);
+  const interactionClass =
+    p.interaction === "lift"
+      ? "transition-transform duration-200 ease-out hover:-translate-y-0.5 hover:shadow-xl"
+      : p.interaction === "glow"
+        ? "transition-shadow duration-200 ease-out hover:shadow-[0_0_0_2px_rgb(59_130_246_/_0.35),0_12px_30px_rgb(2_6_23_/_0.28)]"
+        : "";
   return (
     <div
       data-of-node-id={node.id}
-      className={`min-w-0 ${FRAME_SURFACE_CLASS[p.surface]}`}
+      className={`min-w-0 ${FRAME_SURFACE_CLASS[p.surface]} ${interactionClass}`}
       style={{ padding: p.padding, borderRadius: p.radius }}
     >
       {children}

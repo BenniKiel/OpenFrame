@@ -49,7 +49,7 @@ import {
 import { normalizeFrameFill } from "@/lib/preview/frame-fill";
 import { normalizeFrameProps, type FrameDirection, type FrameLayoutType } from "@/lib/preview/frame-block";
 import { FRAME_BREAKPOINT_MIN_PX, mergeFrameWhenBreakpoint, type FrameBreakpointKey } from "@/lib/preview/frame-responsive";
-import { normalizeHeadingProps } from "@/lib/preview/heading-block";
+import { normalizeHeadingProps, type HeadingSizeScale } from "@/lib/preview/heading-block";
 import { normalizeImageProps, type ImageDimensionUnit, type ImageFit } from "@/lib/preview/image-block";
 import { normalizeLinkProps } from "@/lib/preview/link-block";
 import { LOGO_CLOUD_MAX_ITEMS, normalizeLogoCloudProps, type LogoCloudItem } from "@/lib/preview/logo-cloud-block";
@@ -87,6 +87,7 @@ const HOME_PAGE_SLUG = "home";
 
 const TEXT_TONE_OPTIONS: TextTone[] = ["default", "muted", "inverse", "accent"];
 const TEXT_SIZE_SCALE_OPTIONS: TextSizeScale[] = ["sm", "base", "lg", "xl"];
+const HEADING_SIZE_SCALE_OPTIONS: HeadingSizeScale[] = ["sm", "base", "lg", "xl", "2xl", "3xl"];
 const LEADING_OPTIONS: LeadingToken[] = ["normal", "snug", "relaxed", "loose"];
 const TRACKING_OPTIONS: TrackingToken[] = ["normal", "tight", "wide"];
 const FRAME_SURFACE_OPTIONS: FrameSurface[] = ["default", "muted", "transparent", "inverse", "accent"];
@@ -617,6 +618,23 @@ function readFrameWhenVisible(props: Record<string, unknown>, bp: FrameBreakpoin
   return Boolean((b as Record<string, unknown>).visible);
 }
 
+function readWhenSelect(
+  props: Record<string, unknown>,
+  bp: FrameBreakpointKey,
+  key: "align" | "sizeScale",
+): string {
+  const w = props.when;
+  if (!w || typeof w !== "object") {
+    return "";
+  }
+  const b = (w as Record<string, unknown>)[bp];
+  if (!b || typeof b !== "object") {
+    return "";
+  }
+  const v = (b as Record<string, unknown>)[key];
+  return typeof v === "string" ? v : "";
+}
+
 function DocumentSettingsPanel() {
   const document = useEditorStore((s) => s.document);
   const patchPageDocument = useEditorStore((s) => s.patchPageDocument);
@@ -878,6 +896,71 @@ function PropsPanel() {
             </label>
           </div>
         </PropsSection>
+        <PropsSection title="Responsive (min-width)">
+          <p className="ec-props-hint mb-2 text-[11px] leading-relaxed">
+            Overrides ab jeweils{" "}
+            <span className="font-mono">
+              sm {FRAME_BREAKPOINT_MIN_PX.sm}px, md {FRAME_BREAKPOINT_MIN_PX.md}px, lg {FRAME_BREAKPOINT_MIN_PX.lg}px
+            </span>
+            . Leere Auswahl = kein Override.
+          </p>
+          {(["sm", "md", "lg"] as const).map((bp, idx) => (
+            <div
+              key={bp}
+              className={`ec-props-subgrid grid grid-cols-2 gap-2 ${idx > 0 ? "mt-2 border-t border-zinc-200/60 pt-2" : ""}`}
+            >
+              <p className="ec-text-muted col-span-2 text-[10px] font-semibold uppercase tracking-wide">{bp}</p>
+              <label className="ec-label flex flex-col gap-1 text-[11px]">
+                <span className="ec-text-muted">Align override</span>
+                <select
+                  className="ec-input rounded-md px-2 py-1.5 text-[12px]"
+                  value={readWhenSelect(node.props, bp, "align")}
+                  onChange={(e) => {
+                    const v = e.target.value;
+                    const nextWhen = mergeFrameWhenBreakpoint(node.props, bp, (s) => {
+                      if (v === "") {
+                        delete s.align;
+                      } else {
+                        s.align = v;
+                      }
+                    });
+                    updateNodeProps(node.id, { when: nextWhen });
+                  }}
+                >
+                  <option value="">— (inherit)</option>
+                  <option value="start">start</option>
+                  <option value="center">center</option>
+                  <option value="end">end</option>
+                </select>
+              </label>
+              <label className="ec-label flex flex-col gap-1 text-[11px]">
+                <span className="ec-text-muted">Size scale override</span>
+                <select
+                  className="ec-input rounded-md px-2 py-1.5 text-[12px]"
+                  value={readWhenSelect(node.props, bp, "sizeScale")}
+                  onChange={(e) => {
+                    const v = e.target.value;
+                    const nextWhen = mergeFrameWhenBreakpoint(node.props, bp, (s) => {
+                      if (v === "") {
+                        delete s.sizeScale;
+                      } else {
+                        s.sizeScale = v;
+                      }
+                    });
+                    updateNodeProps(node.id, { when: nextWhen });
+                  }}
+                >
+                  <option value="">— (inherit)</option>
+                  {TEXT_SIZE_SCALE_OPTIONS.map((s) => (
+                    <option key={s} value={s}>
+                      {s}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            </div>
+          ))}
+        </PropsSection>
         {node.id !== "root" ? (
           <section className="ec-props-section">
             <button type="button" className="ec-props-danger-btn w-full" onClick={() => removeSelectedNode()}>
@@ -953,7 +1036,25 @@ function PropsPanel() {
         </PropsSection>
 
         <PropsSection title="Typography">
-          <div className="mt-1 grid grid-cols-1 gap-2 sm:grid-cols-3">
+          <div className="mt-1 grid grid-cols-1 gap-2 sm:grid-cols-4">
+            <label className="ec-label flex flex-col gap-1 text-[11px]">
+              <span className="ec-text-muted">Size scale</span>
+              <select
+                className="ec-input rounded-md px-2 py-1.5 text-[12px]"
+                value={p.sizeScale ?? ""}
+                onChange={(e) => {
+                  const v = e.target.value;
+                  updateNodeProps(node.id, { sizeScale: v === "" ? null : v });
+                }}
+              >
+                <option value="">Auto (from level)</option>
+                {HEADING_SIZE_SCALE_OPTIONS.map((s) => (
+                  <option key={s} value={s}>
+                    {s}
+                  </option>
+                ))}
+              </select>
+            </label>
             <label className="ec-label flex flex-col gap-1 text-[11px]">
               <span className="ec-text-muted">Tone</span>
               <select
@@ -997,6 +1098,71 @@ function PropsPanel() {
               </select>
             </label>
           </div>
+        </PropsSection>
+        <PropsSection title="Responsive (min-width)">
+          <p className="ec-props-hint mb-2 text-[11px] leading-relaxed">
+            Overrides ab jeweils{" "}
+            <span className="font-mono">
+              sm {FRAME_BREAKPOINT_MIN_PX.sm}px, md {FRAME_BREAKPOINT_MIN_PX.md}px, lg {FRAME_BREAKPOINT_MIN_PX.lg}px
+            </span>
+            . Leere Auswahl = kein Override.
+          </p>
+          {(["sm", "md", "lg"] as const).map((bp, idx) => (
+            <div
+              key={bp}
+              className={`ec-props-subgrid grid grid-cols-2 gap-2 ${idx > 0 ? "mt-2 border-t border-zinc-200/60 pt-2" : ""}`}
+            >
+              <p className="ec-text-muted col-span-2 text-[10px] font-semibold uppercase tracking-wide">{bp}</p>
+              <label className="ec-label flex flex-col gap-1 text-[11px]">
+                <span className="ec-text-muted">Align override</span>
+                <select
+                  className="ec-input rounded-md px-2 py-1.5 text-[12px]"
+                  value={readWhenSelect(node.props, bp, "align")}
+                  onChange={(e) => {
+                    const v = e.target.value;
+                    const nextWhen = mergeFrameWhenBreakpoint(node.props, bp, (s) => {
+                      if (v === "") {
+                        delete s.align;
+                      } else {
+                        s.align = v;
+                      }
+                    });
+                    updateNodeProps(node.id, { when: nextWhen });
+                  }}
+                >
+                  <option value="">— (inherit)</option>
+                  <option value="start">start</option>
+                  <option value="center">center</option>
+                  <option value="end">end</option>
+                </select>
+              </label>
+              <label className="ec-label flex flex-col gap-1 text-[11px]">
+                <span className="ec-text-muted">Size scale override</span>
+                <select
+                  className="ec-input rounded-md px-2 py-1.5 text-[12px]"
+                  value={readWhenSelect(node.props, bp, "sizeScale")}
+                  onChange={(e) => {
+                    const v = e.target.value;
+                    const nextWhen = mergeFrameWhenBreakpoint(node.props, bp, (s) => {
+                      if (v === "") {
+                        delete s.sizeScale;
+                      } else {
+                        s.sizeScale = v;
+                      }
+                    });
+                    updateNodeProps(node.id, { when: nextWhen });
+                  }}
+                >
+                  <option value="">— (inherit)</option>
+                  {HEADING_SIZE_SCALE_OPTIONS.map((s) => (
+                    <option key={s} value={s}>
+                      {s}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            </div>
+          ))}
         </PropsSection>
         {node.id !== "root" ? (
           <section className="ec-props-section">
@@ -1524,6 +1690,18 @@ function PropsPanel() {
                 value={p.radius}
                 onChange={(e) => updateNodeProps(node.id, { radius: Number(e.target.value) })}
               />
+            </label>
+            <label className="ec-label col-span-2 flex flex-col gap-1 text-[11px]">
+              <span className="ec-text-muted">Hover effect</span>
+              <select
+                className="ec-input rounded-md px-2 py-1.5 text-[12px]"
+                value={p.interaction}
+                onChange={(e) => updateNodeProps(node.id, { interaction: e.target.value })}
+              >
+                <option value="none">none</option>
+                <option value="lift">lift</option>
+                <option value="glow">glow</option>
+              </select>
             </label>
           </div>
         </PropsSection>
