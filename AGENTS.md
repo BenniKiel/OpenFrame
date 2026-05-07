@@ -10,5 +10,5 @@ When working in this repository, agents MUST proactively evaluate whether a chan
 
 - Trigger this check for every task that touches `packages/openframe-core/**` or changes public exports/types/contracts used by npm consumers.
 - If a changeset is required, remind the user and propose running `pnpm changeset` with the correct semver bump (`patch`, `minor`, `major`).
-- If changes affect only `apps/web/**` or internal tooling/docs without public `@openframe/core` impact, explicitly state that no changeset is needed.
+- If changes affect only `apps/web/**` or internal tooling/docs without public `@benjaminkiel/openframe` impact, explicitly state that no changeset is needed.
 - Before finishing implementation work, include a short "Changeset: required / not required" note in the final response.

@@ -26,7 +26,7 @@ Use clear release notes about **why** the change exists.
 
 Current publish target:
 
-- `@openframe/core` (public)
+- `@benjaminkiel/openframe` (public)
 
 Excluded from publish:
 

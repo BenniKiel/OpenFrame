@@ -20,7 +20,7 @@
     ],
     "paths": {
       "@/*": ["./src/*"],
-      "@openframe/core": ["../../packages/openframe-core/src/index.ts"],
+      "@benjaminkiel/openframe": ["../../packages/openframe-core/src/index.ts"],
       "@openframe/motion-pro": ["../../packages/openframe-motion-pro/src/index.ts"]
     }
   },

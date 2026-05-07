@@ -2,12 +2,12 @@
 
 ## Purpose
 
-This runbook defines the repeatable release flow for the public package `@openframe/core`.
+This runbook defines the repeatable release flow for the public package `@benjaminkiel/openframe`.
 It avoids ad-hoc releases and keeps versioning/changelog/publish behavior deterministic.
 
 ## Scope
 
-- Public package: `@openframe/core`
+- Public package: `@benjaminkiel/openframe`
 - Not published: `@openframe/web`, `@openframe/motion-pro`
 
 ## Required secrets and access
@@ -23,14 +23,14 @@ It avoids ad-hoc releases and keeps versioning/changelog/publish behavior determ
    - `pnpm test`
    - `pnpm build`
 3. Ensure core package builds and packs:
-   - `pnpm --filter @openframe/core build`
-   - `pnpm --filter @openframe/core pack`
+   - `pnpm --filter @benjaminkiel/openframe build`
+   - `pnpm --filter @benjaminkiel/openframe pack`
 
 ## Create a release change
 
 1. Create a changeset:
    - `pnpm changeset`
-2. Select `@openframe/core`
+2. Select `@benjaminkiel/openframe`
 3. Choose semver bump:
    - `patch` for fixes
    - `minor` for backwards-compatible features
@@ -45,7 +45,7 @@ It avoids ad-hoc releases and keeps versioning/changelog/publish behavior determ
 2. Release workflow runs (`.github/workflows/release.yml`)
 3. Changesets action creates/updates release PR with version bumps
 4. Merge release PR
-5. Changesets action publishes `@openframe/core` to npm
+5. Changesets action publishes `@benjaminkiel/openframe` to npm
 
 ### Manual fallback (maintainer machine)
 
@@ -58,9 +58,9 @@ It avoids ad-hoc releases and keeps versioning/changelog/publish behavior determ
 ## Post-release verification
 
 1. Verify package on npm:
-   - `npm view @openframe/core version`
+   - `npm view @benjaminkiel/openframe version`
 2. Verify install in a temp project:
-   - `pnpm add @openframe/core`
+   - `pnpm add @benjaminkiel/openframe`
 3. Smoke test imports:
    - `parsePageDocument`, `parseProjectFile`, `normalizeBlockMotion`
 
@@ -79,7 +79,7 @@ It avoids ad-hoc releases and keeps versioning/changelog/publish behavior determ
 ### Package contents incorrect
 
 - Fix `packages/openframe-core/package.json` (`files`, `exports`, `prepack`)
-- Rebuild and run `pnpm --filter @openframe/core pack` before re-release
+- Rebuild and run `pnpm --filter @benjaminkiel/openframe pack` before re-release
 
 ## Notes
 

@@ -1,4 +1,4 @@
-# @openframe/core
+# @benjaminkiel/openframe
 
 ## 0.2.1
 
@@ -10,7 +10,7 @@
 
 ### Minor Changes
 
-- 84baeef: Prepare the first publishable `@openframe/core` package.
+- 84baeef: Prepare the first publishable `@benjaminkiel/openframe` package.
 
   - Extract canonical contracts into a self-contained package build (`dist/*`).
   - Export OpenFrame document schemas and motion contracts for integrators.

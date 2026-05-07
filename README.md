@@ -142,7 +142,7 @@ This keeps one canonical document format while allowing OSS and premium product 
 - Changesets configured in `.changeset/config.json`
 - CI workflow: `.github/workflows/ci.yml`
 - Release workflow: `.github/workflows/release.yml`
-- Public package target: `@openframe/core`
+- Public package target: `@benjaminkiel/openframe`
 - Private packages excluded from publish: `@openframe/web`, `@openframe/motion-pro`
 
 Commands:
@@ -156,8 +156,8 @@ pnpm release-packages
 Build and inspect the public package locally:
 
 ```bash
-pnpm --filter @openframe/core build
-pnpm --filter @openframe/core pack
+pnpm --filter @benjaminkiel/openframe build
+pnpm --filter @benjaminkiel/openframe pack
 ```
 
 ## Documentation
