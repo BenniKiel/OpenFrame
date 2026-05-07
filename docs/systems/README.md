@@ -10,6 +10,7 @@ Per the **system design standards** (C4 component level), each system in this fo
 - [Editor Core](./EditorCore.md) — admin studio shell at `/admin/editor`: Zustand/Immer document state, tree + props, load/save via Pages API, preview iframe integration, top bar (View site + Settings + Save), **Ctrl+S / ⌘S** save when dirty. Hub at `/admin`; reference UI at `/admin/settings` (external tools + API, no in-app model picker).
 - [Draft Preview](./DraftPreview.md) — live iframe preview of unsaved `OpenframePageDocument` at `/admin/preview/frame?draft=1` via same-origin `postMessage`; optional wheel/pinch bridge from the frame to the editor; `preview-wheel-bridge.ts`.
 - [Public Site](./PublicSite.md) — server-rendered public routes `/` (home with auto-seed) and `/[slug]` reading from `pageRepository`; reserved-slug guard.
+- [Custom Components](./CustomComponents.md) — Dynamic component registry via JSON manifests and discovery API, allowing user-provided TSX blocks.
 
 ## Roadmaps (cross-cutting)
 

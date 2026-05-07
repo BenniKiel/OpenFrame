@@ -1,0 +1,67 @@
+{
+  "version": 1,
+  "name": "pricing-card",
+  "displayName": "Pricing Card",
+  "description": "A pricing card with plan name, price, feature list, and CTA button.",
+  "icon": "credit-card",
+  "acceptsChildren": false,
+  "propertyControls": {
+    "planName": {
+      "type": "string",
+      "title": "Plan Name",
+      "defaultValue": "Pro",
+      "placeholder": "e.g. Pro, Enterprise",
+      "maxLength": 100
+    },
+    "price": {
+      "type": "number",
+      "title": "Price",
+      "defaultValue": 29,
+      "min": 0,
+      "max": 99999,
+      "step": 1,
+      "unit": "$/mo"
+    },
+    "highlighted": {
+      "type": "boolean",
+      "title": "Highlighted",
+      "defaultValue": false,
+      "description": "Show a highlight border and badge area"
+    },
+    "features": {
+      "type": "array",
+      "title": "Features",
+      "maxItems": 20,
+      "itemControl": {
+        "type": "string",
+        "title": "Feature",
+        "defaultValue": "Feature item"
+      },
+      "defaultValue": ["10 projects", "Unlimited collaborators", "Priority support"]
+    },
+    "accentColor": {
+      "type": "color",
+      "title": "Accent Color",
+      "defaultValue": "#6366f1"
+    },
+    "ctaLabel": {
+      "type": "string",
+      "title": "CTA Label",
+      "defaultValue": "Get Started"
+    },
+    "ctaVariant": {
+      "type": "enum",
+      "title": "CTA Style",
+      "options": ["primary", "secondary", "ghost"],
+      "optionLabels": ["Primary", "Secondary", "Ghost"],
+      "defaultValue": "primary"
+    },
+    "badgeText": {
+      "type": "string",
+      "title": "Badge",
+      "defaultValue": "",
+      "description": "Optional badge text (e.g. 'Most Popular')",
+      "hidden": { "prop": "highlighted", "is": false }
+    }
+  }
+}

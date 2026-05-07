@@ -1,0 +1,33 @@
+{
+  "version": 1,
+  "theme": {
+    "radius": "md",
+    "colorScheme": "light",
+    "typographyScale": "default"
+  },
+  "meta": {
+    "title": "Custom Component Example"
+  },
+  "root": {
+    "id": "root",
+    "type": "container",
+    "props": {
+      "paddingTop": "xl",
+      "paddingBottom": "xl"
+    },
+    "children": [
+      {
+        "id": "c-1",
+        "type": "pricing-card",
+        "props": {
+          "planName": "Pro Plan",
+          "price": 29,
+          "isPopular": true,
+          "features": "Everything in Basic, Priority Support, Custom Domain",
+          "buttonColor": "#4f46e5"
+        },
+        "children": []
+      }
+    ]
+  }
+}

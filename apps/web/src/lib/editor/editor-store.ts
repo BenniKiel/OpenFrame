@@ -9,7 +9,10 @@ import {
   type PageMeta,
   type PageNode,
   type PageTheme,
+  buildDefaultPropsFromManifest,
 } from "@/lib/openframe";
+
+import { getCustomManifest } from "@/lib/preview/custom-component-registry";
 
 import { defaultButtonPropsRecord } from "@/lib/preview/button-block";
 import { defaultCardPropsRecord } from "@/lib/preview/card-block";
@@ -86,20 +89,7 @@ type EditorHistorySnapshot = {
   isDirty: boolean;
 };
 
-export type EditorChildKind =
-  | "text"
-  | "frame"
-  | "heading"
-  | "link"
-  | "button"
-  | "image"
-  | "section"
-  | "split"
-  | "card"
-  | "faq"
-  | "testimonial"
-  | "logo-cloud"
-  | "nav-header";
+export type EditorChildKind = string;
 
 type AddChildOptions = {
   /** When false, keep parent selected to support fast multi-add flows. */
@@ -647,8 +637,18 @@ export const useEditorStore = create<EditorStore>()(
             newNode = { id, type: "nav-header", props: defaultNavHeaderPropsRecord(), children: [] };
             break;
           default: {
-            const _never: never = kind;
-            throw new Error(`Unsupported child kind: ${_never}`);
+            // Check custom component registry
+            const manifest = getCustomManifest(kind);
+            if (manifest) {
+              newNode = {
+                id,
+                type: kind,
+                props: buildDefaultPropsFromManifest(manifest),
+                children: [],
+              };
+            } else {
+              throw new Error(`Unsupported child kind: ${kind}`);
+            }
           }
         }
 

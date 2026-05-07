@@ -8,7 +8,17 @@ export {
 
 export { DEFAULT_PREVIEW_DOCUMENT } from "./default-document";
 
-export { renderNode, renderPageDocument } from "./render-page-document";
+export { renderNode, renderPageDocument, resolveBlock } from "./render-page-document";
+
+export {
+  clearCustomRegistry,
+  getCustomManifest,
+  isCustomComponent,
+  listCustomComponents,
+  loadCustomComponentManifests,
+} from "./custom-component-registry";
+
+export { CustomComponentBlock } from "./custom-component-block";
 
 export {
   OPENFRAME_DRAFT_MESSAGE_TYPE,

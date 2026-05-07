@@ -27,3 +27,18 @@ export {
   type OpenframeProjectFile,
   type ProjectFileParseResult,
 } from "./project-file";
+
+export {
+  componentManifestSchema,
+  parseComponentManifest,
+  parseComponentManifestFromJson,
+  propertyControlSchema,
+  type ComponentManifest,
+  type ManifestParseResult,
+  type PropertyControl,
+} from "./component-manifest";
+
+export {
+  buildDefaultPropsFromManifest,
+  resolveControlDefault,
+} from "./manifest-defaults";

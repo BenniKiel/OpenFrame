@@ -65,6 +65,8 @@ import {
   isPinchZoomWheelFlags,
   normalizeWheelPixelDeltas,
 } from "@/lib/preview/preview-wheel-bridge";
+import { loadCustomComponentManifests, getCustomManifest, listCustomComponents } from "@/lib/preview/custom-component-registry";
+import { CustomPropsPanel } from "./custom-props-panel";
 
 import {
   BUILTIN_EDITOR_PREVIEW_BREAKPOINTS,
@@ -567,6 +569,7 @@ function AddBlockButtonGrid({
   nodeId: string;
   addChildTo: (parentId: string, kind: EditorChildKind, options?: { selectNew?: boolean }) => void;
 }) {
+  const customComponents = listCustomComponents();
   return (
     <div className="mt-1">
       <p className="ec-props-hint mb-2 text-[11px]">Tipp: Shift+Click fuegt hinzu und behaelt den Parent ausgewaehlt.</p>
@@ -582,6 +585,28 @@ function AddBlockButtonGrid({
         </button>
       ))}
       </div>
+      
+      {customComponents.length > 0 && (
+        <>
+          <div className="mt-4 mb-2 flex items-center gap-2">
+            <h4 className="text-[11px] font-semibold text-zinc-900 uppercase tracking-wider">Code Components</h4>
+            <div className="h-px flex-1 bg-zinc-200"></div>
+          </div>
+          <div className="grid grid-cols-2 gap-2">
+            {customComponents.map((manifest) => (
+              <button
+                key={manifest.name}
+                type="button"
+                className="ec-props-action-btn w-full text-[12px] border-indigo-200 bg-indigo-50 text-indigo-900 hover:bg-indigo-100"
+                title={manifest.description}
+                onClick={(e) => addChildTo(nodeId, manifest.name, { selectNew: !e.shiftKey })}
+              >
+                {manifest.displayName}
+              </button>
+            ))}
+          </div>
+        </>
+      )}
     </div>
   );
 }
@@ -3202,6 +3227,11 @@ function PropsPanel() {
     );
   }
 
+  const customManifest = getCustomManifest(node.type);
+  if (customManifest) {
+    return <CustomPropsPanel node={node} manifest={customManifest} />;
+  }
+
   return (
     <div className="ec-props-stack">
       <PropsSection title="Data">
@@ -3316,6 +3346,7 @@ export function EditorApp({ initialSlug }: { initialSlug: string }) {
 
   useEffect(() => {
     void fetchPageSlugs();
+    void loadCustomComponentManifests();
   }, [fetchPageSlugs, previewNonce, slug]);
 
   const displaySlugs = useMemo(() => {
