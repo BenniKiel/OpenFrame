@@ -12,6 +12,8 @@ export type ImageDimensionUnit = Exclude<SizeUnit, "auto">;
 export type NormalizedImageProps = {
   src: string;
   alt: string;
+  /** Corner radius in px (`null` = default ~8px rounded card look). */
+  radiusPx: number | null;
   widthSizeMode: AxisSizeMode;
   heightSizeMode: AxisSizeMode;
   width: number | null;
@@ -41,6 +43,19 @@ function readDimUnit(v: unknown, fallback: ImageDimensionUnit): ImageDimensionUn
   return (DIM_UNITS as readonly string[]).includes(s) ? (s as ImageDimensionUnit) : fallback;
 }
 
+/** `radius` / `radiusPx` from JSON — clamped px for `border-radius`. */
+function readRadiusPx(props: Record<string, unknown>): number | null {
+  const raw = props.radiusPx ?? props.radius;
+  if (raw === null || raw === undefined || raw === "") {
+    return null;
+  }
+  const n = typeof raw === "number" ? raw : Number(raw);
+  if (!Number.isFinite(n)) {
+    return null;
+  }
+  return Math.min(64, Math.max(0, Math.round(n)));
+}
+
 function clampDim(value: number, unit: ImageDimensionUnit): number {
   if (unit === "px") {
     return Math.min(Math.max(value, 0), 9999);
@@ -51,6 +66,7 @@ function clampDim(value: number, unit: ImageDimensionUnit): number {
 export function normalizeImageProps(props: Record<string, unknown>): NormalizedImageProps {
   const src = typeof props.src === "string" ? props.src : "";
   const alt = typeof props.alt === "string" ? props.alt : "";
+  const radiusPx = readRadiusPx(props);
   let width = readDim(props.width);
   let widthUnit = readDimUnit(props.widthUnit, "px");
   let height = readDim(props.height);
@@ -103,6 +119,7 @@ export function normalizeImageProps(props: Record<string, unknown>): NormalizedI
   return {
     src,
     alt,
+    radiusPx,
     widthSizeMode,
     heightSizeMode,
     width,
@@ -117,6 +134,7 @@ export function defaultImagePropsRecord(): Record<string, unknown> {
   return {
     src: "https://placehold.co/1200x630/e4e4e7/18181b?text=OpenFrame",
     alt: "Placeholder image",
+    radiusPx: null,
     widthSizeMode: "fill",
     heightSizeMode: "fit",
     width: null,
@@ -179,6 +197,7 @@ export function ImageBlock({ node }: BlockProps) {
   const p = normalizeImageProps(node.props);
   const style: CSSProperties = {
     objectFit: OBJECT_FIT[p.fit],
+    borderRadius: p.radiusPx != null ? `${p.radiusPx}px` : "0.5rem",
   };
   applyImageSizing(style, p);
 
@@ -199,7 +218,7 @@ export function ImageBlock({ node }: BlockProps) {
       data-of-node-id={node.id}
       src={p.src}
       alt={p.alt}
-      className="rounded-lg shadow-sm ring-1 ring-black/5"
+      className="shadow-sm ring-1 ring-black/5"
       style={style}
       loading="lazy"
       decoding="async"

@@ -23,6 +23,14 @@ export function getDefaultLayerTitle(type: string): string {
       return "Split";
     case "card":
       return "Card";
+    case "faq":
+      return "FAQ";
+    case "testimonial":
+      return "Testimonial";
+    case "logo-cloud":
+      return "Logo cloud";
+    case "nav-header":
+      return "Nav header";
     default:
       return type;
   }
@@ -131,7 +139,7 @@ function isDescendantOf(node: PageNode, maybeAncestorId: string): boolean {
   return false;
 }
 
-function findParentAndIndex(root: PageNode, id: string): { parent: PageNode; index: number } | null {
+export function findParentAndIndex(root: PageNode, id: string): { parent: PageNode; index: number } | null {
   const idx = root.children.findIndex((c) => c.id === id);
   if (idx >= 0) {
     return { parent: root, index: idx };

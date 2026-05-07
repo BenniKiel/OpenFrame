@@ -493,6 +493,10 @@ function applyPositionAndStacking(style: CSSProperties, p: NormalizedFrameProps)
   }
   if (p.maxWidthPx != null) {
     style.maxWidth = `${p.maxWidthPx}px`;
+    if (p.positionMode === "flow") {
+      style.marginLeft = "auto";
+      style.marginRight = "auto";
+    }
   }
   if (p.minHeightValue != null && p.minHeightUnit !== "auto") {
     style.minHeight = formatCssLength(p.minHeightValue, p.minHeightUnit);

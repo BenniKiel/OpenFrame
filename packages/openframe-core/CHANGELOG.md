@@ -1,5 +1,11 @@
 # @openframe/core
 
+## 0.2.1
+
+### Patch Changes
+
+- Document built-in block types **`faq`**, **`testimonial`**, **`logo-cloud`**, and **`nav-header`** in `BUILTIN_BLOCK_TYPES` / `BuiltinBlockType` (renderer lives in OpenFrame Web).
+
 ## 0.2.0
 
 ### Minor Changes

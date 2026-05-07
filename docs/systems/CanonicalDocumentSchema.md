@@ -76,8 +76,9 @@ Ziel: **eine klare, importierbare Modul-API** (TypeScript), die alle Eingaben ü
 **Seiten-Document (`OpenframePageDocument`):**
 
 - `version`: Literal `1` — explizite **Schema-Version** für spätere Migrationen (Bump → Transform-Pipeline außerhalb dieses Dokuments, aber Version-Feld wird hier enforced).
-- `theme` *(optional, Phase 3)*: begrenzte Enums für Seiten-Shell (Radius, Color scheme, Typo-Skala) — siehe `page-document.ts` / `page-theme.ts`.
+- `theme` *(optional, Phase 3)*: begrenzte Enums für die **äußere Seiten-Shell** (Radius, Color scheme, Typo-Skala) — siehe `page-document.ts` / `page-theme.ts`; **nicht** dasselbe wie Block-**`surface`** auf `container`/`frame`/`card` (semantische Fläche pro Knoten) — Kurzüberblick **`PreviewRenderer.md`** → Abschnitt *Autoren-Hinweise (Dogfood)*.
 - `meta` *(optional, Phase 3)*: `title`, `description`, `ogImage` für Next **`generateMetadata`** (öffentliche Routen).
+- **`frame.props.when`:** Breakpoint-Teiloverrides (`sm`/`md`/`lg`, min-width) — Vertrag und Semantik in **`PreviewRenderer.md`** (*Autoren-Hinweise* + **`frame-responsive.ts`**).
 - `root`: rekursiver **`PageNode`**:
   - `id`: string, stabil innerhalb des Baums; Zod prüft `min(1)`, **`parsePageDocument`** lehnt **doppelte `id`** im gesamten Baum ab.
   - `type`: string — **logischer Block-Typ** (z. B. `container`, **`frame`**, `text`); welche Typen im MVP erlaubt sind, wird durch **Allowlist im Renderer/Editor** ergänzt, nicht zwingend durch Zod-Enum im ersten Schritt (KISS). Für **`frame`**-Props siehe `normalizeFrameProps` / `FrameBlock` (`frame-block.tsx`), inkl. Motion: **`scrollReveal`**, **`motionEngine`**, **`timelinePreset`**, **`scrollTrigger`** (`motion-contract.ts`, ADR **0004**). Für **`section`** dieselben Motion-Felder wie beim Frame.

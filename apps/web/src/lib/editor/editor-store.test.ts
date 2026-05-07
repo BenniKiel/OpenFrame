@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { parsePageDocument } from "@/lib/openframe";
 
+import { BUILTIN_PRESETS } from "./builtin-presets";
 import { useEditorStore } from "./editor-store";
 
 const sampleDoc = {
@@ -330,6 +331,34 @@ describe("useEditorStore", () => {
     const s = useEditorStore.getState();
     expect(s.document?.root.children).toHaveLength(2);
     expect(s.selectedNodeId).not.toBe("t1");
+  });
+
+  it("applyPresetSubtree inserts built-in preset after selection", () => {
+    const parsed = parsePageDocument(sampleDoc);
+    expect(parsed.ok).toBe(true);
+    if (!parsed.ok) {
+      return;
+    }
+
+    useEditorStore.setState({
+      document: parsed.data,
+      slug: "home",
+      selectedNodeId: "t1",
+      status: "idle",
+      isDirty: false,
+      lastError: null,
+    });
+
+    const hero = BUILTIN_PRESETS.find((p) => p.id === "builtin-hero");
+    expect(hero).toBeDefined();
+    const ok = useEditorStore.getState().applyPresetSubtree(hero!.root, "after");
+    expect(ok).toBe(true);
+
+    const s = useEditorStore.getState();
+    expect(s.document?.root.children).toHaveLength(2);
+    expect(s.document?.root.children[1]?.type).toBe("section");
+    expect(s.selectedNodeId).toBe(s.document?.root.children[1]?.id);
+    expect(s.isDirty).toBe(true);
   });
 
   it("pasteFromClipboardText rejects garbage", () => {

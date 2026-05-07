@@ -18,6 +18,20 @@ export function canParentAcceptChild(parent: PageNode, child: PageNode): boolean
   if (child.type === "section" || child.type === "container") {
     return false;
   }
-  return parent.type === "container" || parent.type === "frame" || parent.type === "section" || parent.type === "split" || parent.type === "card";
+  if (
+    parent.type === "faq" ||
+    parent.type === "testimonial" ||
+    parent.type === "logo-cloud" ||
+    parent.type === "nav-header"
+  ) {
+    return false;
+  }
+  return (
+    parent.type === "container" ||
+    parent.type === "frame" ||
+    parent.type === "section" ||
+    parent.type === "split" ||
+    parent.type === "card"
+  );
 }
 

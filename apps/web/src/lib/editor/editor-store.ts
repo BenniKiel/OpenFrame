@@ -13,19 +13,27 @@ import {
 
 import { defaultButtonPropsRecord } from "@/lib/preview/button-block";
 import { defaultCardPropsRecord } from "@/lib/preview/card-block";
+import { defaultFaqPropsRecord } from "@/lib/preview/faq-block";
 import { defaultFramePropsRecord } from "@/lib/preview/frame-block";
 import { defaultHeadingPropsRecord } from "@/lib/preview/heading-block";
 import { defaultImagePropsRecord } from "@/lib/preview/image-block";
 import { defaultLinkPropsRecord } from "@/lib/preview/link-block";
+import { defaultLogoCloudPropsRecord } from "@/lib/preview/logo-cloud-block";
+import { defaultNavHeaderPropsRecord } from "@/lib/preview/nav-header-block";
 import { defaultSectionPropsRecord } from "@/lib/preview/section-block";
 import { defaultSplitPropsRecord } from "@/lib/preview/split-block";
+import { defaultTestimonialPropsRecord } from "@/lib/preview/testimonial-block";
 import { defaultTextPropsRecord } from "@/lib/preview/text-block";
 
 import { decodeLayerClipboard, encodeLayerClipboard } from "./layer-clipboard";
+import { cloneSubtreeWithFreshIds, createEditorNodeId } from "./node-clone";
+import type { PresetApplyMode } from "./preset-types";
 import { getStarterPageDocument } from "./starter-document";
+import { addUserPreset, deleteUserPreset as deleteStoredUserPreset } from "./user-presets-storage";
 import {
   canMoveNodeById,
   findNodeById,
+  findParentAndIndex,
   moveNodeById,
   moveNodeByIds,
   removeNodeById,
@@ -87,7 +95,11 @@ export type EditorChildKind =
   | "image"
   | "section"
   | "split"
-  | "card";
+  | "card"
+  | "faq"
+  | "testimonial"
+  | "logo-cloud"
+  | "nav-header";
 
 type AddChildOptions = {
   /** When false, keep parent selected to support fast multi-add flows. */
@@ -109,6 +121,12 @@ type EditorActions = {
   getClipboardPayloadForSelectedNode: () => string | null;
   /** Paste a subtree from clipboard text (see `decodeLayerClipboard`) after selection, or append under root if root is selected. */
   pasteFromClipboardText: (text: string) => boolean;
+  /** Insert or replace relative to selection using a validated template subtree (fresh IDs). */
+  applyPresetSubtree: (templateRoot: PageNode, mode: PresetApplyMode) => boolean;
+  /** Save current selection as a user preset (localStorage). */
+  saveUserPresetFromSelection: (name: string, description?: string) => { ok: boolean; error?: string };
+  /** Remove a user preset by id. */
+  deleteUserPresetById: (id: string) => void;
   reorderNodesByIds: (activeId: string, overId: string, placement?: ReorderPlacement) => void;
   moveSelectedNode: (direction: MoveDirection) => void;
   canMoveSelectedNode: (direction: MoveDirection) => boolean;
@@ -139,22 +157,6 @@ const initialState: EditorState = {
 };
 
 export type EditorStore = EditorState & EditorActions;
-
-function createEditorNodeId(kindHint: string): string {
-  return typeof crypto !== "undefined" && "randomUUID" in crypto ? crypto.randomUUID() : `${kindHint}-${Date.now()}`;
-}
-
-function cloneNodeWithFreshIds(node: PageNode): PageNode {
-  // `node` can be an Immer draft proxy; JSON clone keeps props plain and serializable.
-  const propsCopy = JSON.parse(JSON.stringify(node.props)) as Record<string, unknown>;
-  return {
-    id: createEditorNodeId(node.type),
-    type: node.type,
-    props: propsCopy,
-    name: node.name,
-    children: node.children.map(cloneNodeWithFreshIds),
-  };
-}
 
 function cloneDocumentPlain(doc: OpenframePageDocument | null): OpenframePageDocument | null {
   if (!doc) {
@@ -329,7 +331,7 @@ export const useEditorStore = create<EditorStore>()(
         function walk(parent: PageNode): boolean {
           const idx = parent.children.findIndex((child) => child.id === id);
           if (idx >= 0) {
-            const duplicated = cloneNodeWithFreshIds(parent.children[idx]);
+            const duplicated = cloneSubtreeWithFreshIds(parent.children[idx]);
             parent.children.splice(idx + 1, 0, duplicated);
             pushHistoryBeforeChange(draft, before);
             draft.selectedNodeId = duplicated.id;
@@ -374,7 +376,7 @@ export const useEditorStore = create<EditorStore>()(
         if (!draft.document) {
           return;
         }
-        const fresh = cloneNodeWithFreshIds(parsed.data);
+        const fresh = cloneSubtreeWithFreshIds(parsed.data);
         const selId = draft.selectedNodeId;
 
         if (selId === draft.document.root.id) {
@@ -419,6 +421,96 @@ export const useEditorStore = create<EditorStore>()(
       });
 
       return inserted;
+    },
+
+    applyPresetSubtree: (templateRoot, mode) => {
+      const validated = pageNodeSchema.safeParse(templateRoot);
+      if (!validated.success) {
+        return false;
+      }
+      const fresh = cloneSubtreeWithFreshIds(validated.data);
+
+      let applied = false;
+      set((draft) => {
+        if (!draft.document || draft.selectedNodeId === null) {
+          return;
+        }
+        const sel = draft.selectedNodeId;
+
+        if (sel === draft.document.root.id) {
+          if (mode === "replace") {
+            return;
+          }
+          if (!canParentAcceptChild(draft.document.root, fresh)) {
+            return;
+          }
+          const before = captureHistorySnapshot(get());
+          if (mode === "before") {
+            draft.document.root.children.unshift(fresh);
+          } else {
+            draft.document.root.children.push(fresh);
+          }
+          draft.selectedNodeId = fresh.id;
+          draft.isDirty = true;
+          pushHistoryBeforeChange(draft, before);
+          applied = true;
+          return;
+        }
+
+        const found = findParentAndIndex(draft.document.root, sel);
+        if (!found) {
+          return;
+        }
+        const { parent, index } = found;
+        if (!canParentAcceptChild(parent, fresh)) {
+          return;
+        }
+
+        const before = captureHistorySnapshot(get());
+        if (mode === "replace") {
+          parent.children.splice(index, 1, fresh);
+        } else if (mode === "before") {
+          parent.children.splice(index, 0, fresh);
+        } else {
+          parent.children.splice(index + 1, 0, fresh);
+        }
+        draft.selectedNodeId = fresh.id;
+        draft.isDirty = true;
+        pushHistoryBeforeChange(draft, before);
+        applied = true;
+      });
+
+      return applied;
+    },
+
+    saveUserPresetFromSelection: (name, description) => {
+      const trimmed = name.trim();
+      if (!trimmed) {
+        return { ok: false, error: "Name is required" };
+      }
+      const { document, selectedNodeId } = get();
+      if (!document || !selectedNodeId || selectedNodeId === document.root.id) {
+        return { ok: false, error: "Select a layer other than Page" };
+      }
+      const node = findNodeById(document.root, selectedNodeId);
+      if (!node) {
+        return { ok: false, error: "Layer not found" };
+      }
+      const plain = JSON.parse(JSON.stringify(node)) as PageNode;
+      const parsed = pageNodeSchema.safeParse(plain);
+      if (!parsed.success) {
+        return { ok: false, error: "Invalid layer data" };
+      }
+      addUserPreset({
+        name: trimmed,
+        description: description?.trim() ? description.trim().slice(0, 500) : undefined,
+        root: parsed.data,
+      });
+      return { ok: true };
+    },
+
+    deleteUserPresetById: (id) => {
+      deleteStoredUserPreset(id);
     },
 
     reorderNodesByIds: (activeId, overId, placement = "after") =>
@@ -541,6 +633,18 @@ export const useEditorStore = create<EditorStore>()(
             break;
           case "card":
             newNode = { id, type: "card", props: defaultCardPropsRecord(), children: [] };
+            break;
+          case "faq":
+            newNode = { id, type: "faq", props: defaultFaqPropsRecord(), children: [] };
+            break;
+          case "testimonial":
+            newNode = { id, type: "testimonial", props: defaultTestimonialPropsRecord(), children: [] };
+            break;
+          case "logo-cloud":
+            newNode = { id, type: "logo-cloud", props: defaultLogoCloudPropsRecord(), children: [] };
+            break;
+          case "nav-header":
+            newNode = { id, type: "nav-header", props: defaultNavHeaderPropsRecord(), children: [] };
             break;
           default: {
             const _never: never = kind;

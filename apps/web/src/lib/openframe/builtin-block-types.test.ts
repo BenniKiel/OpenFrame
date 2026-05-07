@@ -20,8 +20,12 @@ describe("builtin-block-types", () => {
       "section",
       "split",
       "card",
+      "faq",
+      "testimonial",
+      "logo-cloud",
+      "nav-header",
     ]);
-    expect(listBuiltinBlockTypes()).toHaveLength(10);
+    expect(listBuiltinBlockTypes()).toHaveLength(14);
     expect(BUILTIN_BLOCK_TYPES.text.summary.length).toBeGreaterThan(0);
   });
 

@@ -1,6 +1,6 @@
 import type { BlockProps } from "./block-shared";
 
-export type ButtonVariant = "primary" | "secondary" | "ghost";
+export type ButtonVariant = "primary" | "secondary" | "ghost" | "inverse";
 
 export type NormalizedButtonProps = {
   label: string;
@@ -8,7 +8,7 @@ export type NormalizedButtonProps = {
   variant: ButtonVariant;
 };
 
-const VARIANTS: readonly ButtonVariant[] = ["primary", "secondary", "ghost"];
+const VARIANTS: readonly ButtonVariant[] = ["primary", "secondary", "ghost", "inverse"];
 
 const BTN_BASE =
   "inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2";
@@ -19,6 +19,9 @@ const VARIANT_CLASS: Record<ButtonVariant, string> = {
   secondary:
     "border border-zinc-200 bg-white text-zinc-900 shadow-sm hover:bg-zinc-50 focus-visible:outline-zinc-400",
   ghost: "text-zinc-800 hover:bg-zinc-100/80 focus-visible:outline-zinc-400",
+  /** High-contrast CTA on dark / inverse surfaces (e.g. `frame` `surface: inverse`). */
+  inverse:
+    "border border-white/25 bg-white text-zinc-900 shadow-sm hover:bg-zinc-100 focus-visible:outline-white/70",
 };
 
 function readLabel(v: unknown): string {

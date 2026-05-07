@@ -35,6 +35,7 @@ import { isPreviewContentSizeMessage, postDraftToPreview } from "@/lib/preview";
 import { AXIS_SIZE_MODES, type AxisSizeMode } from "@/lib/preview/axis-size-mode";
 import { normalizeButtonProps, type ButtonVariant } from "@/lib/preview/button-block";
 import { normalizeCardProps } from "@/lib/preview/card-block";
+import { FAQ_MAX_ITEMS, normalizeFaqProps, type FaqItem } from "@/lib/preview/faq-block";
 import { normalizeContainerProps, type ContainerHeightMode } from "@/lib/preview/container-block";
 import {
   CONTAINER_SURFACE_CLASS,
@@ -51,9 +52,12 @@ import { FRAME_BREAKPOINT_MIN_PX, mergeFrameWhenBreakpoint, type FrameBreakpoint
 import { normalizeHeadingProps } from "@/lib/preview/heading-block";
 import { normalizeImageProps, type ImageDimensionUnit, type ImageFit } from "@/lib/preview/image-block";
 import { normalizeLinkProps } from "@/lib/preview/link-block";
+import { LOGO_CLOUD_MAX_ITEMS, normalizeLogoCloudProps, type LogoCloudItem } from "@/lib/preview/logo-cloud-block";
+import { NAV_HEADER_MAX_LINKS, normalizeNavHeaderProps, type NavHeaderLink } from "@/lib/preview/nav-header-block";
 import { normalizeSectionProps, SECTION_PADDING_Y_OPTIONS, type SectionPaddingY } from "@/lib/preview/section-block";
 import { normalizeSplitProps, type SplitCrossAlign, type SplitRatio } from "@/lib/preview/split-block";
-import { normalizeTextProps, type TextRole } from "@/lib/preview/text-block";
+import { normalizeTestimonialProps } from "@/lib/preview/testimonial-block";
+import { normalizeTextProps, type TextAlign, type TextRole, type TextSizeScale } from "@/lib/preview/text-block";
 import {
   isPreviewPinchBridgeMessage,
   isPreviewWheelBridgeMessage,
@@ -73,6 +77,7 @@ import {
   type EditorPreviewBreakpoint,
 } from "./preview-breakpoints";
 import { MotionPropsFields } from "./motion-props-fields";
+import { PresetPickerModal } from "./preset-picker-modal";
 
 const UNSAVED_NAV_MESSAGE =
   "You have unsaved changes. If you switch pages now, those edits will be lost. Continue anyway?";
@@ -81,6 +86,7 @@ const UNSAVED_NAV_MESSAGE =
 const HOME_PAGE_SLUG = "home";
 
 const TEXT_TONE_OPTIONS: TextTone[] = ["default", "muted", "inverse", "accent"];
+const TEXT_SIZE_SCALE_OPTIONS: TextSizeScale[] = ["sm", "base", "lg", "xl"];
 const LEADING_OPTIONS: LeadingToken[] = ["normal", "snug", "relaxed", "loose"];
 const TRACKING_OPTIONS: TrackingToken[] = ["normal", "tight", "wide"];
 const FRAME_SURFACE_OPTIONS: FrameSurface[] = ["default", "muted", "transparent", "inverse", "accent"];
@@ -528,6 +534,10 @@ const ADD_BLOCK_KINDS: EditorChildKind[] = [
   "section",
   "split",
   "card",
+  "faq",
+  "testimonial",
+  "logo-cloud",
+  "nav-header",
 ];
 
 const ADD_BLOCK_LABEL: Record<EditorChildKind, string> = {
@@ -540,6 +550,10 @@ const ADD_BLOCK_LABEL: Record<EditorChildKind, string> = {
   section: "Add Section",
   split: "Add Split",
   card: "Add Card",
+  faq: "Add FAQ",
+  testimonial: "Add Testimonial",
+  "logo-cloud": "Add Logo cloud",
+  "nav-header": "Add Nav header",
 };
 
 const SPLIT_ALIGN_OPTIONS: SplitCrossAlign[] = ["stretch", "start", "center", "end"];
@@ -767,6 +781,18 @@ function PropsPanel() {
               </select>
             </label>
             <label className="ec-label flex flex-col gap-1 text-[11px]">
+              <span className="ec-text-muted">Align</span>
+              <select
+                className="ec-input rounded-md px-2 py-1.5 text-[12px]"
+                value={p.align}
+                onChange={(e) => updateNodeProps(node.id, { align: e.target.value as TextAlign })}
+              >
+                <option value="start">Start</option>
+                <option value="center">Center</option>
+                <option value="end">End</option>
+              </select>
+            </label>
+            <label className="ec-label col-span-2 flex flex-col gap-1 text-[11px]">
               <span className="ec-text-muted">Max width (px)</span>
               <input
                 type="text"
@@ -789,7 +815,25 @@ function PropsPanel() {
         </PropsSection>
 
         <PropsSection title="Typography">
-          <div className="mt-1 grid grid-cols-1 gap-2 sm:grid-cols-3">
+          <div className="mt-1 grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-4">
+            <label className="ec-label flex flex-col gap-1 text-[11px]">
+              <span className="ec-text-muted">Size scale</span>
+              <select
+                className="ec-input rounded-md px-2 py-1.5 text-[12px]"
+                value={p.sizeScale ?? ""}
+                onChange={(e) => {
+                  const v = e.target.value;
+                  updateNodeProps(node.id, { sizeScale: v === "" ? null : v });
+                }}
+              >
+                <option value="">Default (base)</option>
+                {TEXT_SIZE_SCALE_OPTIONS.map((s) => (
+                  <option key={s} value={s}>
+                    {s}
+                  </option>
+                ))}
+              </select>
+            </label>
             <label className="ec-label flex flex-col gap-1 text-[11px]">
               <span className="ec-text-muted">Tone</span>
               <select
@@ -1012,7 +1056,13 @@ function PropsPanel() {
 
   if (node.type === "button") {
     const p = normalizeButtonProps(node.props);
-    const variants: ButtonVariant[] = ["primary", "secondary", "ghost"];
+    const variants: ButtonVariant[] = ["primary", "secondary", "ghost", "inverse"];
+    const variantLabel: Record<ButtonVariant, string> = {
+      primary: "Primary",
+      secondary: "Secondary",
+      ghost: "Ghost",
+      inverse: "Inverse (on dark)",
+    };
     return (
       <div className="ec-props-stack">
         <PropsSection title="Button">
@@ -1048,7 +1098,7 @@ function PropsPanel() {
               >
                 {variants.map((v) => (
                   <option key={v} value={v}>
-                    {v}
+                    {variantLabel[v]}
                   </option>
                 ))}
               </select>
@@ -1282,6 +1332,27 @@ function PropsPanel() {
                 ))}
               </select>
             </label>
+            <label className="ec-label flex flex-col gap-1 text-[11px]">
+              <span className="ec-text-muted">Corner radius (px)</span>
+              <input
+                type="text"
+                inputMode="numeric"
+                className="ec-input rounded-md px-2.5 py-1.5 font-mono text-[12px]"
+                placeholder="default (8)"
+                value={p.radiusPx ?? ""}
+                onChange={(e) => {
+                  const v = e.target.value.trim();
+                  if (v === "") {
+                    updateNodeProps(node.id, { radiusPx: null, radius: null });
+                    return;
+                  }
+                  const n = Number(v);
+                  updateNodeProps(node.id, {
+                    radiusPx: Number.isFinite(n) ? Math.min(64, Math.max(0, Math.round(n))) : null,
+                  });
+                }}
+              />
+            </label>
           </div>
         </PropsSection>
         {node.id !== "root" ? (
@@ -1458,6 +1529,376 @@ function PropsPanel() {
         </PropsSection>
         <PropsSection title="Add blocks">
           <AddBlockButtonGrid nodeId={node.id} addChildTo={addChildTo} />
+        </PropsSection>
+        {node.id !== "root" ? (
+          <section className="ec-props-section">
+            <button type="button" className="ec-props-danger-btn w-full" onClick={() => removeSelectedNode()}>
+              Remove layer
+            </button>
+          </section>
+        ) : null}
+      </div>
+    );
+  }
+
+  if (node.type === "faq") {
+    const p = normalizeFaqProps(node.props);
+    const setItems = (items: FaqItem[]) => {
+      updateNodeProps(node.id, { items });
+    };
+    return (
+      <div className="ec-props-stack">
+        <PropsSection title="FAQ">
+          <p className="ec-props-hint mb-2 text-[11px] leading-relaxed">
+            Q/A pairs render as native <strong>&lt;details&gt;</strong> rows. This block does not use tree children — edit
+            the list below.
+          </p>
+          <label className="ec-label mb-3 flex flex-col gap-1 text-[11px]">
+            <span className="ec-text-muted">Surface</span>
+            <select
+              className="ec-input rounded-md px-2 py-1.5 text-[12px]"
+              value={p.surface}
+              onChange={(e) => updateNodeProps(node.id, { surface: e.target.value })}
+            >
+              {FRAME_SURFACE_OPTIONS.map((s) => (
+                <option key={s} value={s}>
+                  {s}
+                </option>
+              ))}
+            </select>
+          </label>
+          <div className="flex flex-col gap-3">
+            {p.items.map((item, i) => (
+              <div key={i} className="rounded-lg border border-zinc-200/80 bg-zinc-50/60 p-2.5">
+                <div className="mb-1.5 flex items-center justify-between gap-2">
+                  <span className="ec-text-muted text-[10px] font-medium uppercase tracking-wide">Pair {i + 1}</span>
+                  <button
+                    type="button"
+                    className="ec-props-action-btn shrink-0 px-2 py-1 text-[11px]"
+                    disabled={p.items.length <= 1}
+                    onClick={() => setItems(p.items.filter((_, j) => j !== i))}
+                  >
+                    Remove
+                  </button>
+                </div>
+                <label className="ec-label mb-2 flex flex-col gap-1 text-[11px]">
+                  <span className="ec-text-muted">Question</span>
+                  <textarea
+                    className="ec-input min-h-[2.5rem] rounded-md px-2 py-1.5 font-sans text-[12px]"
+                    rows={2}
+                    value={item.question}
+                    onChange={(e) => {
+                      const next = p.items.map((it, j) => (j === i ? { ...it, question: e.target.value } : it));
+                      setItems(next);
+                    }}
+                  />
+                </label>
+                <label className="ec-label flex flex-col gap-1 text-[11px]">
+                  <span className="ec-text-muted">Answer</span>
+                  <textarea
+                    className="ec-input min-h-[4rem] rounded-md px-2 py-1.5 font-sans text-[12px]"
+                    rows={4}
+                    value={item.answer}
+                    onChange={(e) => {
+                      const next = p.items.map((it, j) => (j === i ? { ...it, answer: e.target.value } : it));
+                      setItems(next);
+                    }}
+                  />
+                </label>
+              </div>
+            ))}
+          </div>
+          <button
+            type="button"
+            className="ec-props-action-btn mt-3 w-full text-[12px]"
+            disabled={p.items.length >= FAQ_MAX_ITEMS}
+            onClick={() => setItems([...p.items, { question: "", answer: "" }])}
+          >
+            Add question
+          </button>
+        </PropsSection>
+        {node.id !== "root" ? (
+          <section className="ec-props-section">
+            <button type="button" className="ec-props-danger-btn w-full" onClick={() => removeSelectedNode()}>
+              Remove layer
+            </button>
+          </section>
+        ) : null}
+      </div>
+    );
+  }
+
+  if (node.type === "testimonial") {
+    const p = normalizeTestimonialProps(node.props);
+    return (
+      <div className="ec-props-stack">
+        <PropsSection title="Testimonial">
+          <label className="ec-label mb-2 flex flex-col gap-1 text-[11px]">
+            <span className="ec-text-muted">Surface</span>
+            <select
+              className="ec-input rounded-md px-2 py-1.5 text-[12px]"
+              value={p.surface}
+              onChange={(e) => updateNodeProps(node.id, { surface: e.target.value })}
+            >
+              {FRAME_SURFACE_OPTIONS.map((s) => (
+                <option key={s} value={s}>
+                  {s}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="ec-label mb-2 flex flex-col gap-1 text-[11px]">
+            <span className="ec-text-muted">Quote</span>
+            <textarea
+              className="ec-input min-h-[4rem] rounded-md px-2 py-1.5 font-sans text-[12px]"
+              rows={4}
+              value={p.quote}
+              onChange={(e) => updateNodeProps(node.id, { quote: e.target.value })}
+            />
+          </label>
+          <div className="grid grid-cols-2 gap-2">
+            <label className="ec-label flex flex-col gap-1 text-[11px]">
+              <span className="ec-text-muted">Author</span>
+              <input
+                type="text"
+                className="ec-input rounded-md px-2 py-1.5 text-[12px]"
+                value={p.author}
+                onChange={(e) => updateNodeProps(node.id, { author: e.target.value })}
+              />
+            </label>
+            <label className="ec-label flex flex-col gap-1 text-[11px]">
+              <span className="ec-text-muted">Role</span>
+              <input
+                type="text"
+                className="ec-input rounded-md px-2 py-1.5 text-[12px]"
+                value={p.role}
+                onChange={(e) => updateNodeProps(node.id, { role: e.target.value })}
+              />
+            </label>
+          </div>
+          <label className="ec-label mt-2 flex flex-col gap-1 text-[11px]">
+            <span className="ec-text-muted">Avatar URL (optional)</span>
+            <input
+              type="text"
+              className="ec-input rounded-md px-2 py-1.5 font-mono text-[12px]"
+              value={p.avatarSrc ?? ""}
+              onChange={(e) => updateNodeProps(node.id, { avatarSrc: e.target.value })}
+            />
+          </label>
+        </PropsSection>
+        {node.id !== "root" ? (
+          <section className="ec-props-section">
+            <button type="button" className="ec-props-danger-btn w-full" onClick={() => removeSelectedNode()}>
+              Remove layer
+            </button>
+          </section>
+        ) : null}
+      </div>
+    );
+  }
+
+  if (node.type === "logo-cloud") {
+    const p = normalizeLogoCloudProps(node.props);
+    const setLogos = (logos: LogoCloudItem[]) => updateNodeProps(node.id, { logos });
+    return (
+      <div className="ec-props-stack">
+        <PropsSection title="Logo cloud">
+          <label className="ec-label mb-2 flex flex-col gap-1 text-[11px]">
+            <span className="ec-text-muted">Surface</span>
+            <select
+              className="ec-input rounded-md px-2 py-1.5 text-[12px]"
+              value={p.surface}
+              onChange={(e) => updateNodeProps(node.id, { surface: e.target.value })}
+            >
+              {FRAME_SURFACE_OPTIONS.map((s) => (
+                <option key={s} value={s}>
+                  {s}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="ec-label mb-2 flex flex-col gap-1 text-[11px]">
+            <span className="ec-text-muted">Title (optional)</span>
+            <input
+              type="text"
+              className="ec-input rounded-md px-2 py-1.5 text-[12px]"
+              value={p.title}
+              onChange={(e) => updateNodeProps(node.id, { title: e.target.value })}
+            />
+          </label>
+          <div className="flex flex-col gap-2.5">
+            {p.logos.map((logo, i) => (
+              <div key={i} className="rounded-lg border border-zinc-200/80 bg-zinc-50/60 p-2.5">
+                <div className="mb-1.5 flex items-center justify-between">
+                  <span className="ec-text-muted text-[10px] font-medium uppercase tracking-wide">Logo {i + 1}</span>
+                  <button
+                    type="button"
+                    className="ec-props-action-btn px-2 py-1 text-[11px]"
+                    disabled={p.logos.length <= 1}
+                    onClick={() => setLogos(p.logos.filter((_, j) => j !== i))}
+                  >
+                    Remove
+                  </button>
+                </div>
+                <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                  <label className="ec-label flex flex-col gap-1 text-[11px]">
+                    <span className="ec-text-muted">Name</span>
+                    <input
+                      type="text"
+                      className="ec-input rounded-md px-2 py-1.5 text-[12px]"
+                      value={logo.name}
+                      onChange={(e) => {
+                        const next = p.logos.map((it, j) => (j === i ? { ...it, name: e.target.value } : it));
+                        setLogos(next);
+                      }}
+                    />
+                  </label>
+                  <label className="ec-label flex flex-col gap-1 text-[11px]">
+                    <span className="ec-text-muted">Image URL (optional)</span>
+                    <input
+                      type="text"
+                      className="ec-input rounded-md px-2 py-1.5 font-mono text-[12px]"
+                      value={logo.src}
+                      onChange={(e) => {
+                        const next = p.logos.map((it, j) => (j === i ? { ...it, src: e.target.value } : it));
+                        setLogos(next);
+                      }}
+                    />
+                  </label>
+                </div>
+              </div>
+            ))}
+          </div>
+          <button
+            type="button"
+            className="ec-props-action-btn mt-3 w-full text-[12px]"
+            disabled={p.logos.length >= LOGO_CLOUD_MAX_ITEMS}
+            onClick={() => setLogos([...p.logos, { name: "", src: "" }])}
+          >
+            Add logo
+          </button>
+        </PropsSection>
+        {node.id !== "root" ? (
+          <section className="ec-props-section">
+            <button type="button" className="ec-props-danger-btn w-full" onClick={() => removeSelectedNode()}>
+              Remove layer
+            </button>
+          </section>
+        ) : null}
+      </div>
+    );
+  }
+
+  if (node.type === "nav-header") {
+    const p = normalizeNavHeaderProps(node.props);
+    const setLinks = (links: NavHeaderLink[]) => updateNodeProps(node.id, { links });
+    return (
+      <div className="ec-props-stack">
+        <PropsSection title="Nav header">
+          <label className="ec-label mb-2 flex flex-col gap-1 text-[11px]">
+            <span className="ec-text-muted">Surface</span>
+            <select
+              className="ec-input rounded-md px-2 py-1.5 text-[12px]"
+              value={p.surface}
+              onChange={(e) => updateNodeProps(node.id, { surface: e.target.value })}
+            >
+              {FRAME_SURFACE_OPTIONS.map((s) => (
+                <option key={s} value={s}>
+                  {s}
+                </option>
+              ))}
+            </select>
+          </label>
+          <div className="grid grid-cols-2 gap-2">
+            <label className="ec-label flex flex-col gap-1 text-[11px]">
+              <span className="ec-text-muted">Logo label</span>
+              <input
+                type="text"
+                className="ec-input rounded-md px-2 py-1.5 text-[12px]"
+                value={p.logoLabel}
+                onChange={(e) => updateNodeProps(node.id, { logoLabel: e.target.value })}
+              />
+            </label>
+            <label className="ec-label flex flex-col gap-1 text-[11px]">
+              <span className="ec-text-muted">Logo href</span>
+              <input
+                type="text"
+                className="ec-input rounded-md px-2 py-1.5 font-mono text-[12px]"
+                value={p.logoHref}
+                onChange={(e) => updateNodeProps(node.id, { logoHref: e.target.value })}
+              />
+            </label>
+          </div>
+          <div className="mt-2 flex flex-col gap-2.5">
+            {p.links.map((link, i) => (
+              <div key={i} className="rounded-lg border border-zinc-200/80 bg-zinc-50/60 p-2.5">
+                <div className="mb-1.5 flex items-center justify-between">
+                  <span className="ec-text-muted text-[10px] font-medium uppercase tracking-wide">Link {i + 1}</span>
+                  <button
+                    type="button"
+                    className="ec-props-action-btn px-2 py-1 text-[11px]"
+                    onClick={() => setLinks(p.links.filter((_, j) => j !== i))}
+                  >
+                    Remove
+                  </button>
+                </div>
+                <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                  <label className="ec-label flex flex-col gap-1 text-[11px]">
+                    <span className="ec-text-muted">Label</span>
+                    <input
+                      type="text"
+                      className="ec-input rounded-md px-2 py-1.5 text-[12px]"
+                      value={link.label}
+                      onChange={(e) => {
+                        const next = p.links.map((it, j) => (j === i ? { ...it, label: e.target.value } : it));
+                        setLinks(next);
+                      }}
+                    />
+                  </label>
+                  <label className="ec-label flex flex-col gap-1 text-[11px]">
+                    <span className="ec-text-muted">Href</span>
+                    <input
+                      type="text"
+                      className="ec-input rounded-md px-2 py-1.5 font-mono text-[12px]"
+                      value={link.href}
+                      onChange={(e) => {
+                        const next = p.links.map((it, j) => (j === i ? { ...it, href: e.target.value } : it));
+                        setLinks(next);
+                      }}
+                    />
+                  </label>
+                </div>
+              </div>
+            ))}
+          </div>
+          <button
+            type="button"
+            className="ec-props-action-btn mt-3 w-full text-[12px]"
+            disabled={p.links.length >= NAV_HEADER_MAX_LINKS}
+            onClick={() => setLinks([...p.links, { label: "", href: "" }])}
+          >
+            Add nav link
+          </button>
+          <div className="mt-3 grid grid-cols-2 gap-2">
+            <label className="ec-label flex flex-col gap-1 text-[11px]">
+              <span className="ec-text-muted">CTA label (optional)</span>
+              <input
+                type="text"
+                className="ec-input rounded-md px-2 py-1.5 text-[12px]"
+                value={p.ctaLabel}
+                onChange={(e) => updateNodeProps(node.id, { ctaLabel: e.target.value })}
+              />
+            </label>
+            <label className="ec-label flex flex-col gap-1 text-[11px]">
+              <span className="ec-text-muted">CTA href (optional)</span>
+              <input
+                type="text"
+                className="ec-input rounded-md px-2 py-1.5 font-mono text-[12px]"
+                value={p.ctaHref}
+                onChange={(e) => updateNodeProps(node.id, { ctaHref: e.target.value })}
+              />
+            </label>
+          </div>
         </PropsSection>
         {node.id !== "root" ? (
           <section className="ec-props-section">
@@ -2641,6 +3082,7 @@ export function EditorApp({ initialSlug }: { initialSlug: string }) {
   const [isAddingPageRow, setIsAddingPageRow] = useState(false);
   const [newSlugDraft, setNewSlugDraft] = useState("");
   const [newSlugError, setNewSlugError] = useState<string | null>(null);
+  const [presetPickerOpen, setPresetPickerOpen] = useState(false);
   const draftIframeRef = useRef<HTMLIFrameElement>(null);
   const previewViewportRef = useRef<HTMLDivElement>(null);
   const panPointerRef = useRef<{
@@ -3836,11 +4278,18 @@ export function EditorApp({ initialSlug }: { initialSlug: string }) {
             ) : null}
 
             {leftTab === "assets" ? (
-              <div className="ec-library-card rounded-lg p-4 text-center">
-                <p className="ec-library-title text-[13px] font-medium">Components & assets</p>
+              <div className="ec-library-card rounded-lg p-4">
+                <p className="ec-library-title text-[13px] font-medium">Components & presets</p>
                 <p className="ec-library-hint mt-2 text-[12px] leading-relaxed">
-                  Drag-and-drop library blocks will live here — coming soon.
+                  Layer presets (built-in and your saved subtrees). Choose where to insert relative to the selected layer.
                 </p>
+                <button
+                  type="button"
+                  className="ec-btn-primary mt-4 w-full rounded-md px-3 py-2 text-[13px] font-medium transition-colors"
+                  onClick={() => setPresetPickerOpen(true)}
+                >
+                  Browse presets…
+                </button>
               </div>
             ) : null}
           </div>
@@ -4146,6 +4595,7 @@ export function EditorApp({ initialSlug }: { initialSlug: string }) {
           </div>
         </aside>
       </div>
+      <PresetPickerModal open={presetPickerOpen} onClose={() => setPresetPickerOpen(false)} />
     </div>
   );
 }

@@ -129,6 +129,103 @@ describe("renderPageDocument", () => {
     );
   });
 
+  it("renders faq block with details", () => {
+    const doc = parsePageDocument({
+      version: 1,
+      root: {
+        id: "root",
+        type: "container",
+        props: {},
+        children: [
+          {
+            id: "faq1",
+            type: "faq",
+            props: {
+              surface: "default",
+              items: [{ question: "Pricing?", answer: "See the readme." }],
+            },
+            children: [],
+          },
+        ],
+      },
+    });
+    expect(doc.ok).toBe(true);
+    if (!doc.ok) {
+      return;
+    }
+    render(<div>{renderPageDocument(doc.data)}</div>);
+    expect(document.querySelector("[data-of-node-id='faq1']")).toBeTruthy();
+    expect(screen.getByText("Pricing?")).toBeInTheDocument();
+    expect(screen.getByText("See the readme.")).toBeInTheDocument();
+  });
+
+  it("renders testimonial and logo-cloud blocks", () => {
+    const doc = parsePageDocument({
+      version: 1,
+      root: {
+        id: "root",
+        type: "container",
+        props: {},
+        children: [
+          {
+            id: "t1",
+            type: "testimonial",
+            props: { quote: "Amazing.", author: "Sam", role: "Founder", avatarSrc: "" },
+            children: [],
+          },
+          {
+            id: "l1",
+            type: "logo-cloud",
+            props: { title: "Trusted by", logos: [{ name: "Acme", src: "" }] },
+            children: [],
+          },
+        ],
+      },
+    });
+    expect(doc.ok).toBe(true);
+    if (!doc.ok) {
+      return;
+    }
+    render(<div>{renderPageDocument(doc.data)}</div>);
+    expect(screen.getByText("Amazing.")).toBeInTheDocument();
+    expect(screen.getByText("Sam")).toBeInTheDocument();
+    expect(screen.getByText("Trusted by")).toBeInTheDocument();
+    expect(screen.getByText("Acme")).toBeInTheDocument();
+  });
+
+  it("renders nav-header block", () => {
+    const doc = parsePageDocument({
+      version: 1,
+      root: {
+        id: "root",
+        type: "container",
+        props: {},
+        children: [
+          {
+            id: "nav1",
+            type: "nav-header",
+            props: {
+              logoLabel: "OpenFrame",
+              logoHref: "/",
+              links: [{ label: "Pricing", href: "#pricing" }],
+              ctaLabel: "Start",
+              ctaHref: "#start",
+            },
+            children: [],
+          },
+        ],
+      },
+    });
+    expect(doc.ok).toBe(true);
+    if (!doc.ok) {
+      return;
+    }
+    render(<div>{renderPageDocument(doc.data)}</div>);
+    expect(screen.getByRole("link", { name: "OpenFrame" })).toHaveAttribute("href", "/");
+    expect(screen.getByRole("link", { name: "Pricing" })).toHaveAttribute("href", "#pricing");
+    expect(screen.getByRole("link", { name: "Start" })).toHaveAttribute("href", "#start");
+  });
+
   it("renders unknown block fallback", () => {
     const doc = parsePageDocument({
       version: 1,

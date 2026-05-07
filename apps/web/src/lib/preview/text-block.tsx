@@ -12,10 +12,16 @@ import {
 
 export type TextRole = "p" | "span";
 
+/** Horizontal alignment (same vocabulary as `heading`). */
+export type TextAlign = "start" | "center" | "end";
+export type TextSizeScale = "sm" | "base" | "lg" | "xl";
+
 export type NormalizedTextProps = {
   text: string;
   as: TextRole;
   maxWidth: number | null;
+  align: TextAlign;
+  sizeScale: TextSizeScale | null;
   tone: TextTone;
   leading: LeadingToken;
   tracking: TrackingToken;
@@ -60,6 +66,35 @@ function readTracking(v: unknown): TrackingToken {
   return "normal";
 }
 
+function readAlign(v: unknown): TextAlign {
+  const s = typeof v === "string" ? v : "";
+  if (s === "center" || s === "end") {
+    return s;
+  }
+  return "start";
+}
+
+function readSizeScale(v: unknown): TextSizeScale | null {
+  const s = typeof v === "string" ? v : "";
+  if (s === "sm" || s === "base" || s === "lg" || s === "xl") {
+    return s;
+  }
+  return null;
+}
+
+const ALIGN_CLASS: Record<TextAlign, string> = {
+  start: "text-left",
+  center: "text-center",
+  end: "text-right",
+};
+
+const TEXT_SIZE_CLASS: Record<TextSizeScale, string> = {
+  sm: "text-sm",
+  base: "text-base",
+  lg: "text-lg",
+  xl: "text-xl",
+};
+
 /**
  * Coerce `text` block props for rendering and the editor.
  */
@@ -68,10 +103,12 @@ export function normalizeTextProps(props: Record<string, unknown>): NormalizedTe
   const rawAs = typeof props.as === "string" ? props.as : "";
   const as: TextRole = rawAs === "span" ? "span" : "p";
   const maxWidth = readOptionalPositive(props.maxWidth);
+  const align = readAlign(props.align);
+  const sizeScale = readSizeScale(props.sizeScale);
   const tone = readTextTone(props.tone);
   const leading = readLeading(props.leading);
   const tracking = readTracking(props.tracking);
-  return { text, as, maxWidth, tone, leading, tracking };
+  return { text, as, maxWidth, align, sizeScale, tone, leading, tracking };
 }
 
 export function defaultTextPropsRecord(): Record<string, unknown> {
@@ -89,7 +126,8 @@ export function TextBlock({ node }: BlockProps) {
     style.maxWidth = `${p.maxWidth}px`;
   }
   const className = [
-    "text-base",
+    TEXT_SIZE_CLASS[p.sizeScale ?? "base"],
+    ALIGN_CLASS[p.align],
     LEADING_CLASS[p.leading],
     TRACKING_CLASS[p.tracking],
     TEXT_TONE_CLASS[p.tone],

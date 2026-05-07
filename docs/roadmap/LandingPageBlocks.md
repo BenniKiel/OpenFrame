@@ -111,7 +111,8 @@ flowchart LR
 | **P1** | **`section`** oder semantische **`frame`-Presets** | `<section>` + optional `id` für Anker; Landmarks für SEO |
 | **P2** | **`card`** (optional Icon/Bild-Slots als Kinder) | Features / Pricing-Vorbereitung |
 | **P2** | **`columns`** / **`split`** | Zwei-Spalten-Layouts ohne tiefes Grid-Fummeln |
-| **P3** | **`logo-cloud`**, **`testimonial`**, **`faq`** | Typische Landing-Abschnitte; Props datengetrieben halten |
+| **P3** | **`logo-cloud`**, **`testimonial`**, **`faq`** | Typische Landing-Abschnitte; Props datengetrieben halten — alle drei sind jetzt als Built-ins umgesetzt (**`type: "faq"`**, **`"testimonial"`**, **`"logo-cloud"`** inkl. Editor-Panels); Layout-Hinweise weiterhin in **`PreviewRenderer.md`** (*Autoren-Hinweise*). |
+| **P3** | **`nav-header`** (optional) | SaaS-Chrome mit Logo + Links + CTA — als Built-in **`type: "nav-header"`** umgesetzt (datengetrieben, ohne Baum-Kinder). |
 
 **Exit-Kriterium Phase 2:** Mindestens **drei typische Landing-Abschnitte** (z. B. Hero, Features, Footer-Anker) sind als **Blöcke oder dokumentierte Frame-Rezepte** reproduzierbar.
 

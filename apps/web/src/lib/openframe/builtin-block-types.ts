@@ -15,7 +15,8 @@ export const BUILTIN_BLOCK_TYPES = {
       "Layout region: stack/grid, axis size modes, optional `fill`, `surface`, visible, insets, overflow, z-index; optional `when.sm|md|lg`; motion: `scrollReveal` (Open-Core), optional `motionEngine` (`core`|`gsap`), `timelinePreset` (`none`|`revealStagger`|`heroSequence`), `scrollTrigger` object — GSAP path requires Motion Pro env at runtime (`motion-contract.ts`, ADR 0004).",
   },
   text: {
-    summary: "Body copy: `props.text`, optional `as` (p|span) and `maxWidth` (px).",
+    summary:
+      "Body copy: `props.text`, optional `as` (p|span), `maxWidth` (px), `align` (start|center|end), and optional `sizeScale` (sm|base|lg|xl).",
   },
   heading: {
     summary: "Heading: `text`, `level` 1–6, `align`, optional `as` tag override (`h1`–`h6` or `p`).",
@@ -40,6 +41,22 @@ export const BUILTIN_BLOCK_TYPES = {
   },
   card: {
     summary: "Inset surface panel: `surface`, `padding`, `radius`; children for body (and optional heading/image as nested nodes).",
+  },
+  faq: {
+    summary:
+      "FAQ accordion: `items` as `{ question, answer }[]` (max 32), optional `surface`; native `<details>` rows; no tree `children` (data-only block).",
+  },
+  testimonial: {
+    summary:
+      "Single testimonial card: `quote`, `author`, optional `role` and `avatarSrc`, optional `surface`; no tree `children`.",
+  },
+  "logo-cloud": {
+    summary:
+      "Logo grid: optional `title`, `logos` as `{ name, src }[]` (max 24), optional `surface`; no tree `children`.",
+  },
+  "nav-header": {
+    summary:
+      "Simple marketing header row: `logoLabel`/`logoHref`, nav `links` (`{ label, href }[]`, max 8), optional CTA (`ctaLabel`/`ctaHref`), optional `surface`; no tree `children`.",
   },
 } as const;
 

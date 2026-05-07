@@ -3,13 +3,17 @@ import type { ComponentType } from "react";
 import type { BlockProps } from "./block-shared";
 import { ButtonBlock } from "./button-block";
 import { CardBlock } from "./card-block";
+import { FaqBlock } from "./faq-block";
 import { ContainerBlock } from "./container-block";
 import { FrameBlock } from "./frame-block";
 import { HeadingBlock } from "./heading-block";
 import { ImageBlock } from "./image-block";
 import { LinkBlock } from "./link-block";
+import { LogoCloudBlock } from "./logo-cloud-block";
+import { NavHeaderBlock } from "./nav-header-block";
 import { SectionBlock } from "./section-block";
 import { SplitBlock } from "./split-block";
+import { TestimonialBlock } from "./testimonial-block";
 import { TextBlock } from "./text-block";
 
 export type { BlockProps } from "./block-shared";
@@ -43,4 +47,8 @@ export const blockRegistry: Record<string, ComponentType<BlockProps>> = {
   section: SectionBlock,
   split: SplitBlock,
   card: CardBlock,
+  faq: FaqBlock,
+  testimonial: TestimonialBlock,
+  "logo-cloud": LogoCloudBlock,
+  "nav-header": NavHeaderBlock,
 };

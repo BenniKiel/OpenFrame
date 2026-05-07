@@ -26,3 +26,9 @@ export {
   decodeLayerClipboard,
   encodeLayerClipboard,
 } from "./layer-clipboard";
+export type { PresetApplyMode } from "./preset-types";
+export { BUILTIN_PRESETS } from "./builtin-presets";
+export type { BuiltinPresetDefinition } from "./builtin-presets";
+export type { StoredUserPreset } from "./user-presets-storage";
+export { loadUserPresets } from "./user-presets-storage";
+export { cloneSubtreeWithFreshIds, createEditorNodeId } from "./node-clone";

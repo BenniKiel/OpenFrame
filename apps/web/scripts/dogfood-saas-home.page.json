@@ -1,0 +1,1079 @@
+{
+  "version": 1,
+  "theme": {
+    "radius": "lg",
+    "colorScheme": "light",
+    "typographyScale": "default"
+  },
+  "meta": {
+    "title": "OpenFrame — Canonical pages, one document",
+    "description": "Dogfood landing built from sections, frames, split, cards, and tokens — hero through FAQ."
+  },
+  "root": {
+    "id": "root",
+    "type": "container",
+    "name": "Page",
+    "props": { "surface": "default" },
+    "children": [
+      {
+        "id": "s-hero",
+        "type": "section",
+        "name": "Hero",
+        "props": {
+          "anchorId": "hero",
+          "paddingY": "xl",
+          "scrollReveal": "fade-up"
+        },
+        "children": [
+          {
+            "id": "hero-shell",
+            "type": "frame",
+            "name": "Hero shell",
+            "props": {
+              "layoutType": "stack",
+              "direction": "vertical",
+              "gap": 28,
+              "padding": 40,
+              "radius": 0,
+              "widthSizeMode": "fill",
+              "heightSizeMode": "fit",
+              "align": "center",
+              "justify": "center",
+              "columns": 2,
+              "surface": "accent",
+              "maxWidthPx": null,
+              "when": { "md": { "padding": 56, "gap": 32 } }
+            },
+            "children": [
+              {
+                "id": "hk",
+                "type": "heading",
+                "name": "Kicker",
+                "props": {
+                  "text": "NOW IN OPEN BETA",
+                  "level": 6,
+                  "align": "center",
+                  "tone": "accent",
+                  "tracking": "wide",
+                  "as": ""
+                },
+                "children": []
+              },
+              {
+                "id": "ht",
+                "type": "heading",
+                "name": "Headline",
+                "props": {
+                  "text": "Ship marketing sites from one validated document.",
+                  "level": 1,
+                  "align": "center",
+                  "tone": "default",
+                  "leading": "snug",
+                  "as": ""
+                },
+                "children": []
+              },
+              {
+                "id": "hs",
+                "type": "heading",
+                "name": "Subhead",
+                "props": {
+                  "text": "Edit visually, store canonical JSON, render the same tree in preview and production — no duplicate CMS theme layer.",
+                  "level": 3,
+                  "align": "center",
+                  "tone": "muted",
+                  "leading": "relaxed",
+                  "as": "p"
+                },
+                "children": []
+              },
+              {
+                "id": "hi",
+                "type": "image",
+                "name": "Product hero",
+                "props": {
+                  "src": "https://placehold.co/1280x720/0ea5e9/0c4a6e?text=Editor+%2B+Preview",
+                  "alt": "Abstract product UI placeholder",
+                  "widthSizeMode": "fill",
+                  "heightSizeMode": "fit",
+                  "fit": "cover"
+                },
+                "children": []
+              },
+              {
+                "id": "hct",
+                "type": "frame",
+                "name": "CTA row",
+                "props": {
+                  "layoutType": "stack",
+                  "direction": "horizontal",
+                  "gap": 16,
+                  "padding": 0,
+                  "radius": 0,
+                  "widthSizeMode": "fit",
+                  "heightSizeMode": "fit",
+                  "align": "center",
+                  "justify": "center",
+                  "wrap": true,
+                  "surface": "transparent",
+                  "columns": 2
+                },
+                "children": [
+                  {
+                    "id": "hb1",
+                    "type": "button",
+                    "name": "Primary CTA",
+                    "props": {
+                      "label": "Start building",
+                      "href": "/admin/editor?slug=home",
+                      "variant": "primary"
+                    },
+                    "children": []
+                  },
+                  {
+                    "id": "hb2",
+                    "type": "button",
+                    "name": "Secondary CTA",
+                    "props": {
+                      "label": "View repo",
+                      "href": "https://github.com",
+                      "variant": "secondary"
+                    },
+                    "children": []
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "s-logos",
+        "type": "section",
+        "name": "Logo strip",
+        "props": { "anchorId": "customers", "paddingY": "md" },
+        "children": [
+          {
+            "id": "sl-wrap",
+            "type": "frame",
+            "name": "Logo row wrap",
+            "props": {
+              "layoutType": "stack",
+              "direction": "vertical",
+              "gap": 16,
+              "padding": 0,
+              "radius": 0,
+              "widthSizeMode": "fill",
+              "align": "center",
+              "justify": "center",
+              "surface": "transparent",
+              "columns": 2
+            },
+            "children": [
+              {
+                "id": "sl-t",
+                "type": "heading",
+                "name": "Trusted by teams who…",
+                "props": {
+                  "text": "Trusted by teams shipping on tight cycles",
+                  "level": 6,
+                  "align": "center",
+                  "tone": "muted",
+                  "as": ""
+                },
+                "children": []
+              },
+              {
+                "id": "sl-row",
+                "type": "frame",
+                "name": "Logos",
+                "props": {
+                  "layoutType": "stack",
+                  "direction": "horizontal",
+                  "gap": 32,
+                  "padding": 16,
+                  "radius": 12,
+                  "widthSizeMode": "fill",
+                  "heightSizeMode": "fit",
+                  "align": "center",
+                  "justify": "center",
+                  "wrap": true,
+                  "surface": "muted",
+                  "columns": 2
+                },
+                "children": [
+                  {
+                    "id": "sl-i1",
+                    "type": "image",
+                    "name": "Logo 1",
+                    "props": {
+                      "src": "https://placehold.co/140x40/e4e4e7/52525b?text=Acme",
+                      "alt": "Acme logo placeholder",
+                      "widthSizeMode": "fixed",
+                      "widthSizeValue": 140,
+                      "widthSizeUnit": "px",
+                      "heightSizeMode": "fit",
+                      "fit": "contain"
+                    },
+                    "children": []
+                  },
+                  {
+                    "id": "sl-i2",
+                    "type": "image",
+                    "name": "Logo 2",
+                    "props": {
+                      "src": "https://placehold.co/140x40/e4e4e7/52525b?text=North",
+                      "alt": "North logo placeholder",
+                      "widthSizeMode": "fixed",
+                      "widthSizeValue": 140,
+                      "widthSizeUnit": "px",
+                      "heightSizeMode": "fit",
+                      "fit": "contain"
+                    },
+                    "children": []
+                  },
+                  {
+                    "id": "sl-i3",
+                    "type": "image",
+                    "name": "Logo 3",
+                    "props": {
+                      "src": "https://placehold.co/140x40/e4e4e7/52525b?text=Pulse",
+                      "alt": "Pulse logo placeholder",
+                      "widthSizeMode": "fixed",
+                      "widthSizeValue": 140,
+                      "widthSizeUnit": "px",
+                      "heightSizeMode": "fit",
+                      "fit": "contain"
+                    },
+                    "children": []
+                  },
+                  {
+                    "id": "sl-i4",
+                    "type": "image",
+                    "name": "Logo 4",
+                    "props": {
+                      "src": "https://placehold.co/140x40/e4e4e7/52525b?text=Atlas",
+                      "alt": "Atlas logo placeholder",
+                      "widthSizeMode": "fixed",
+                      "widthSizeValue": 140,
+                      "widthSizeUnit": "px",
+                      "heightSizeMode": "fit",
+                      "fit": "contain"
+                    },
+                    "children": []
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "s-feat",
+        "type": "section",
+        "name": "Features",
+        "props": { "anchorId": "features", "paddingY": "xl", "scrollReveal": "fade-in" },
+        "children": [
+          {
+            "id": "sf-head",
+            "type": "frame",
+            "name": "Features header",
+            "props": {
+              "layoutType": "stack",
+              "direction": "vertical",
+              "gap": 12,
+              "padding": 0,
+              "radius": 0,
+              "widthSizeMode": "fill",
+              "align": "center",
+              "justify": "start",
+              "surface": "transparent",
+              "columns": 2
+            },
+            "children": [
+              {
+                "id": "sf-h",
+                "type": "heading",
+                "name": "Section title",
+                "props": {
+                  "text": "Built for cross-functional delivery",
+                  "level": 2,
+                  "align": "center",
+                  "as": ""
+                },
+                "children": []
+              },
+              {
+                "id": "sf-s",
+                "type": "heading",
+                "name": "Section subtitle",
+                "props": {
+                  "text": "Structure beats one-off Tailwind strings — bounded props, shared renderer, editor parity.",
+                  "level": 4,
+                  "align": "center",
+                  "tone": "muted",
+                  "leading": "relaxed",
+                  "as": "p"
+                },
+                "children": []
+              }
+            ]
+          },
+          {
+            "id": "sf-grid",
+            "type": "frame",
+            "name": "Feature grid",
+            "props": {
+              "layoutType": "grid",
+              "direction": "vertical",
+              "gap": 24,
+              "padding": 8,
+              "radius": 0,
+              "widthSizeMode": "fill",
+              "heightSizeMode": "fit",
+              "align": "stretch",
+              "justify": "start",
+              "columns": 1,
+              "surface": "transparent",
+              "when": {
+                "md": { "columns": 2 },
+                "lg": { "columns": 3 }
+              }
+            },
+            "children": [
+              {
+                "id": "sf-c1",
+                "type": "card",
+                "name": "Card — Editor",
+                "props": { "surface": "default", "padding": 24, "radius": 16 },
+                "children": [
+                  {
+                    "id": "sf-c1i",
+                    "type": "image",
+                    "name": "Icon",
+                    "props": {
+                      "src": "https://placehold.co/48x48/f0f9ff/0369a1?text=Ed",
+                      "alt": "",
+                      "widthSizeMode": "fixed",
+                      "widthSizeValue": 48,
+                      "widthSizeUnit": "px",
+                      "heightSizeMode": "fixed",
+                      "heightSizeValue": 48,
+                      "heightSizeUnit": "px",
+                      "fit": "cover"
+                    },
+                    "children": []
+                  },
+                  {
+                    "id": "sf-c1t",
+                    "type": "heading",
+                    "name": "Title",
+                    "props": { "text": "Visual editor", "level": 3, "align": "start", "as": "" },
+                    "children": []
+                  },
+                  {
+                    "id": "sf-c1d",
+                    "type": "text",
+                    "name": "Body",
+                    "props": {
+                      "text": "Layers, properties, and presets align with the canonical schema — what you edit is what ships.",
+                      "as": "p",
+                      "leading": "relaxed",
+                      "tone": "muted"
+                    },
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "id": "sf-c2",
+                "type": "card",
+                "name": "Card — Preview",
+                "props": { "surface": "muted", "padding": 24, "radius": 16 },
+                "children": [
+                  {
+                    "id": "sf-c2i",
+                    "type": "image",
+                    "name": "Icon",
+                    "props": {
+                      "src": "https://placehold.co/48x48/f4f4f5/3f3f46?text=Pr",
+                      "alt": "",
+                      "widthSizeMode": "fixed",
+                      "widthSizeValue": 48,
+                      "widthSizeUnit": "px",
+                      "heightSizeMode": "fixed",
+                      "heightSizeValue": 48,
+                      "heightSizeUnit": "px",
+                      "fit": "cover"
+                    },
+                    "children": []
+                  },
+                  {
+                    "id": "sf-c2t",
+                    "type": "heading",
+                    "name": "Title",
+                    "props": { "text": "Draft preview", "level": 3, "align": "start", "as": "" },
+                    "children": []
+                  },
+                  {
+                    "id": "sf-c2d",
+                    "type": "text",
+                    "name": "Body",
+                    "props": {
+                      "text": "Same React tree in the iframe and on the public route — catch layout issues before merge.",
+                      "as": "p",
+                      "leading": "relaxed",
+                      "tone": "muted"
+                    },
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "id": "sf-c3",
+                "type": "card",
+                "name": "Card — Schema",
+                "props": { "surface": "default", "padding": 24, "radius": 16 },
+                "children": [
+                  {
+                    "id": "sf-c3i",
+                    "type": "image",
+                    "name": "Icon",
+                    "props": {
+                      "src": "https://placehold.co/48x48/ecfeff/155e75?text=Zod",
+                      "alt": "",
+                      "widthSizeMode": "fixed",
+                      "widthSizeValue": 48,
+                      "widthSizeUnit": "px",
+                      "heightSizeMode": "fixed",
+                      "heightSizeValue": 48,
+                      "heightSizeUnit": "px",
+                      "fit": "cover"
+                    },
+                    "children": []
+                  },
+                  {
+                    "id": "sf-c3t",
+                    "type": "heading",
+                    "name": "Title",
+                    "props": {
+                      "text": "Validated documents",
+                      "level": 3,
+                      "align": "start",
+                      "as": ""
+                    },
+                    "children": []
+                  },
+                  {
+                    "id": "sf-c3d",
+                    "type": "text",
+                    "name": "Body",
+                    "props": {
+                      "text": "Agents and APIs produce JSON that round-trips through Zod — fewer surprises in CI.",
+                      "as": "p",
+                      "leading": "relaxed",
+                      "tone": "muted"
+                    },
+                    "children": []
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "s-quote",
+        "type": "section",
+        "name": "Social proof",
+        "props": { "anchorId": "customers-story", "paddingY": "lg" },
+        "children": [
+          {
+            "id": "sq-head",
+            "type": "heading",
+            "name": "Proof headline",
+            "props": {
+              "text": "What teams say",
+              "level": 2,
+              "align": "center",
+              "as": ""
+            },
+            "children": []
+          },
+          {
+            "id": "sq-split",
+            "type": "split",
+            "name": "Quotes row",
+            "props": { "gap": 24, "align": "stretch", "ratio": "equal" },
+            "children": [
+              {
+                "id": "sq-a",
+                "type": "card",
+                "name": "Quote A",
+                "props": { "surface": "muted", "padding": 28, "radius": 16 },
+                "children": [
+                  {
+                    "id": "sq-at",
+                    "type": "text",
+                    "name": "Quote",
+                    "props": {
+                      "text": "“We stopped maintaining two sources of truth for marketing pages. OpenFrame is boring in the best way.”",
+                      "as": "p",
+                      "leading": "relaxed",
+                      "tone": "default"
+                    },
+                    "children": []
+                  },
+                  {
+                    "id": "sq-an",
+                    "type": "heading",
+                    "name": "Name",
+                    "props": { "text": "Alex Rivera", "level": 5, "align": "start", "as": "" },
+                    "children": []
+                  },
+                  {
+                    "id": "sq-ar",
+                    "type": "text",
+                    "name": "Role",
+                    "props": {
+                      "text": "VP Marketing · Series B SaaS",
+                      "as": "p",
+                      "tone": "muted",
+                      "leading": "normal"
+                    },
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "id": "sq-b",
+                "type": "card",
+                "name": "Quote B",
+                "props": { "surface": "muted", "padding": 28, "radius": 16 },
+                "children": [
+                  {
+                    "id": "sq-bt",
+                    "type": "text",
+                    "name": "Quote",
+                    "props": {
+                      "text": "“Preview parity caught a regression our visual tests missed — same DOM, different chrome.”",
+                      "as": "p",
+                      "leading": "relaxed",
+                      "tone": "default"
+                    },
+                    "children": []
+                  },
+                  {
+                    "id": "sq-bn",
+                    "type": "heading",
+                    "name": "Name",
+                    "props": { "text": "Jordan Kim", "level": 5, "align": "start", "as": "" },
+                    "children": []
+                  },
+                  {
+                    "id": "sq-br",
+                    "type": "text",
+                    "name": "Role",
+                    "props": {
+                      "text": "Staff Engineer · Infrastructure",
+                      "as": "p",
+                      "tone": "muted",
+                      "leading": "normal"
+                    },
+                    "children": []
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "sq-note",
+            "type": "text",
+            "name": "Fine print",
+            "props": {
+              "text": "Quotes illustrative — demonstrates testimonial-shaped layout without a dedicated testimonial block.",
+              "as": "p",
+              "tone": "muted",
+              "leading": "normal",
+              "maxWidth": 720
+            },
+            "children": []
+          }
+        ]
+      },
+      {
+        "id": "s-price",
+        "type": "section",
+        "name": "Pricing",
+        "props": { "anchorId": "pricing", "paddingY": "xl" },
+        "children": [
+          {
+            "id": "sp-head",
+            "type": "heading",
+            "name": "Pricing title",
+            "props": {
+              "text": "Simple tiers",
+              "level": 2,
+              "align": "center",
+              "as": ""
+            },
+            "children": []
+          },
+          {
+            "id": "sp-sub",
+            "type": "heading",
+            "name": "Pricing subtitle",
+            "props": {
+              "text": "Structured as cards — no native price table or billing integration.",
+              "level": 5,
+              "align": "center",
+              "tone": "muted",
+              "as": "p"
+            },
+            "children": []
+          },
+          {
+            "id": "sp-grid",
+            "type": "frame",
+            "name": "Pricing columns",
+            "props": {
+              "layoutType": "grid",
+              "direction": "vertical",
+              "gap": 24,
+              "padding": 12,
+              "radius": 0,
+              "widthSizeMode": "fill",
+              "heightSizeMode": "fit",
+              "align": "stretch",
+              "justify": "start",
+              "columns": 1,
+              "surface": "transparent",
+              "when": { "md": { "columns": 2 }, "lg": { "columns": 3 } }
+            },
+            "children": [
+              {
+                "id": "sp-starter",
+                "type": "card",
+                "name": "Starter",
+                "props": { "surface": "default", "padding": 28, "radius": 16 },
+                "children": [
+                  {
+                    "id": "sp-st-t",
+                    "type": "heading",
+                    "name": "Tier",
+                    "props": { "text": "Starter", "level": 4, "align": "start", "as": "" },
+                    "children": []
+                  },
+                  {
+                    "id": "sp-st-p",
+                    "type": "heading",
+                    "name": "Price",
+                    "props": {
+                      "text": "$0",
+                      "level": 2,
+                      "align": "start",
+                      "tone": "accent",
+                      "as": ""
+                    },
+                    "children": []
+                  },
+                  {
+                    "id": "sp-st-f",
+                    "type": "text",
+                    "name": "Features",
+                    "props": {
+                      "text": "Studio access · single project · community support.",
+                      "as": "p",
+                      "tone": "muted",
+                      "leading": "relaxed"
+                    },
+                    "children": []
+                  },
+                  {
+                    "id": "sp-st-b",
+                    "type": "button",
+                    "name": "CTA",
+                    "props": {
+                      "label": "Get started",
+                      "href": "/admin/editor?slug=home",
+                      "variant": "secondary"
+                    },
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "id": "sp-pro",
+                "type": "card",
+                "name": "Pro",
+                "props": { "surface": "accent", "padding": 28, "radius": 16 },
+                "children": [
+                  {
+                    "id": "sp-pr-t",
+                    "type": "heading",
+                    "name": "Tier",
+                    "props": {
+                      "text": "Pro",
+                      "level": 4,
+                      "align": "start",
+                      "tone": "accent",
+                      "as": ""
+                    },
+                    "children": []
+                  },
+                  {
+                    "id": "sp-pr-p",
+                    "type": "heading",
+                    "name": "Price",
+                    "props": {
+                      "text": "$29/mo",
+                      "level": 2,
+                      "align": "start",
+                      "tone": "accent",
+                      "as": ""
+                    },
+                    "children": []
+                  },
+                  {
+                    "id": "sp-pr-f",
+                    "type": "text",
+                    "name": "Features",
+                    "props": {
+                      "text": "Unlimited pages · audit trail · priority support.",
+                      "as": "p",
+                      "tone": "muted",
+                      "leading": "relaxed"
+                    },
+                    "children": []
+                  },
+                  {
+                    "id": "sp-pr-b",
+                    "type": "button",
+                    "name": "CTA",
+                    "props": {
+                      "label": "Choose Pro",
+                      "href": "/admin/editor?slug=home",
+                      "variant": "primary"
+                    },
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "id": "sp-ent",
+                "type": "card",
+                "name": "Enterprise",
+                "props": { "surface": "muted", "padding": 28, "radius": 16 },
+                "children": [
+                  {
+                    "id": "sp-en-t",
+                    "type": "heading",
+                    "name": "Tier",
+                    "props": { "text": "Enterprise", "level": 4, "align": "start", "as": "" },
+                    "children": []
+                  },
+                  {
+                    "id": "sp-en-p",
+                    "type": "heading",
+                    "name": "Price",
+                    "props": {
+                      "text": "Let's talk",
+                      "level": 3,
+                      "align": "start",
+                      "tone": "muted",
+                      "as": ""
+                    },
+                    "children": []
+                  },
+                  {
+                    "id": "sp-en-f",
+                    "type": "text",
+                    "name": "Features",
+                    "props": {
+                      "text": "SSO · VPC deploy · custom SLA.",
+                      "as": "p",
+                      "tone": "muted",
+                      "leading": "relaxed"
+                    },
+                    "children": []
+                  },
+                  {
+                    "id": "sp-en-b",
+                    "type": "button",
+                    "name": "CTA",
+                    "props": {
+                      "label": "Contact sales",
+                      "href": "mailto:sales@example.com",
+                      "variant": "ghost"
+                    },
+                    "children": []
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "s-faq",
+        "type": "section",
+        "name": "FAQ",
+        "props": { "anchorId": "faq", "paddingY": "lg" },
+        "children": [
+          {
+            "id": "fq-h",
+            "type": "heading",
+            "name": "FAQ title",
+            "props": { "text": "Questions", "level": 2, "align": "center", "as": "" },
+            "children": []
+          },
+          {
+            "id": "fq-stack",
+            "type": "frame",
+            "name": "FAQ list",
+            "props": {
+              "layoutType": "stack",
+              "direction": "vertical",
+              "gap": 16,
+              "padding": 0,
+              "widthSizeMode": "fill",
+              "maxWidthPx": 720,
+              "align": "stretch",
+              "surface": "transparent",
+              "columns": 2
+            },
+            "children": [
+              {
+                "id": "fq1",
+                "type": "card",
+                "name": "Q1",
+                "props": { "surface": "muted", "padding": 20, "radius": 12 },
+                "children": [
+                  {
+                    "id": "fq1q",
+                    "type": "heading",
+                    "name": "Q",
+                    "props": {
+                      "text": "Is this a hosted CMS?",
+                      "level": 4,
+                      "align": "start",
+                      "as": ""
+                    },
+                    "children": []
+                  },
+                  {
+                    "id": "fq1a",
+                    "type": "text",
+                    "name": "A",
+                    "props": {
+                      "text": "OpenFrame centers on a canonical page document and renderers — storage and auth are application concerns.",
+                      "as": "p",
+                      "tone": "muted",
+                      "leading": "relaxed"
+                    },
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "id": "fq2",
+                "type": "card",
+                "name": "Q2",
+                "props": { "surface": "muted", "padding": 20, "radius": 12 },
+                "children": [
+                  {
+                    "id": "fq2q",
+                    "type": "heading",
+                    "name": "Q",
+                    "props": {
+                      "text": "Can agents generate pages safely?",
+                      "level": 4,
+                      "align": "start",
+                      "as": ""
+                    },
+                    "children": []
+                  },
+                  {
+                    "id": "fq2a",
+                    "type": "text",
+                    "name": "A",
+                    "props": {
+                      "text": "Yes — bounded block types and parsing reduce malformed trees; unknown types still render as fallbacks in development.",
+                      "as": "p",
+                      "tone": "muted",
+                      "leading": "relaxed"
+                    },
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "id": "fq3",
+                "type": "card",
+                "name": "Q3",
+                "props": { "surface": "muted", "padding": 20, "radius": 12 },
+                "children": [
+                  {
+                    "id": "fq3q",
+                    "type": "heading",
+                    "name": "Q",
+                    "props": {
+                      "text": "Where does motion run?",
+                      "level": 4,
+                      "align": "start",
+                      "as": ""
+                    },
+                    "children": []
+                  },
+                  {
+                    "id": "fq3a",
+                    "type": "text",
+                    "name": "A",
+                    "props": {
+                      "text": "Scroll-reveal presets run in preview and public bundles. GSAP-driven timelines are optional behind Motion Pro env (`NEXT_PUBLIC_OPENFRAME_MOTION_PRO`).",
+                      "as": "p",
+                      "tone": "muted",
+                      "leading": "relaxed"
+                    },
+                    "children": []
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "s-close",
+        "type": "section",
+        "name": "Closing CTA",
+        "props": { "anchorId": "get-started", "paddingY": "xl" },
+        "children": [
+          {
+            "id": "sc-frame",
+            "type": "frame",
+            "name": "Closing panel",
+            "props": {
+              "layoutType": "stack",
+              "direction": "vertical",
+              "gap": 20,
+              "padding": 48,
+              "radius": 16,
+              "widthSizeMode": "fill",
+              "align": "center",
+              "justify": "center",
+              "surface": "inverse",
+              "columns": 2
+            },
+            "children": [
+              {
+                "id": "sc-h",
+                "type": "heading",
+                "name": "Headline",
+                "props": {
+                  "text": "Ready to dogfood your own stack?",
+                  "level": 2,
+                  "align": "center",
+                  "tone": "inverse",
+                  "as": ""
+                },
+                "children": []
+              },
+              {
+                "id": "sc-t",
+                "type": "text",
+                "name": "Copy",
+                "props": {
+                  "text": "Open the editor, tune spacing and surfaces, save — then load the public route and compare.",
+                  "as": "p",
+                  "tone": "inverse",
+                  "leading": "relaxed",
+                  "maxWidth": 520
+                },
+                "children": []
+              },
+              {
+                "id": "sc-b",
+                "type": "button",
+                "name": "CTA",
+                "props": {
+                  "label": "Open editor",
+                  "href": "/admin/editor?slug=home",
+                  "variant": "primary"
+                },
+                "children": []
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "s-foot",
+        "type": "section",
+        "name": "Footer",
+        "props": { "anchorId": "footer", "paddingY": "md" },
+        "children": [
+          {
+            "id": "ft-row",
+            "type": "split",
+            "name": "Footer split",
+            "props": { "gap": 24, "align": "center", "ratio": "equal" },
+            "children": [
+              {
+                "id": "ft-copy",
+                "type": "text",
+                "name": "Copyright",
+                "props": {
+                  "text": "© OpenFrame dogfood page — built from built-in blocks.",
+                  "as": "p",
+                  "tone": "muted"
+                },
+                "children": []
+              },
+              {
+                "id": "ft-links",
+                "type": "frame",
+                "name": "Links",
+                "props": {
+                  "layoutType": "stack",
+                  "direction": "horizontal",
+                  "gap": 20,
+                  "padding": 0,
+                  "surface": "transparent",
+                  "widthSizeMode": "fit",
+                  "align": "center",
+                  "justify": "end",
+                  "columns": 2
+                },
+                "children": [
+                  {
+                    "id": "ft-l1",
+                    "type": "link",
+                    "name": "Privacy",
+                    "props": {
+                      "href": "#footer",
+                      "label": "Privacy",
+                      "external": false
+                    },
+                    "children": []
+                  },
+                  {
+                    "id": "ft-l2",
+                    "type": "link",
+                    "name": "Status",
+                    "props": {
+                      "href": "https://example.com",
+                      "label": "Status",
+                      "external": true
+                    },
+                    "children": []
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}
