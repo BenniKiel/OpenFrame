@@ -93,7 +93,7 @@ const LEGACY_LAYOUTS: readonly FrameLayout[] = ["stack", "horizontal", "wrap", "
 
 const OVERFLOWS: readonly FrameOverflow[] = ["visible", "hidden", "auto", "clip", "scroll"];
 
-const SURFACES: readonly FrameSurface[] = ["default", "muted", "transparent", "inverse", "accent"];
+const SURFACES: readonly FrameSurface[] = ["default", "muted", "transparent", "inverse", "accent", "glass"];
 
 const SIZE_UNITS: readonly SizeUnit[] = ["px", "pct", "vw", "vh", "auto"];
 

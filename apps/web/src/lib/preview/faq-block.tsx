@@ -11,7 +11,7 @@ export type NormalizedFaqProps = {
   items: FaqItem[];
 };
 
-const SURFACES: readonly FrameSurface[] = ["default", "muted", "transparent", "inverse", "accent"];
+const SURFACES: readonly FrameSurface[] = ["default", "muted", "transparent", "inverse", "accent", "glass"];
 
 /** Exported for editor caps — keep in sync with `readItems`. */
 export const FAQ_MAX_ITEMS = 32;

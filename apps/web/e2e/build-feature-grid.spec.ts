@@ -1,7 +1,12 @@
+import { randomBytes } from "node:crypto";
+
 import { test, expect } from "@playwright/test";
 
+/** Fresh slug so parallel e2e runs do not mutate the same SQLite row as `home`. */
+const editorSlug = `e2efeat${randomBytes(4).toString("hex")}`;
+
 test("build feature grid", async ({ page }) => {
-  await page.goto("/admin/editor?slug=home");
+  await page.goto(`/admin/editor?slug=${encodeURIComponent(editorSlug)}`);
 
   // Wait for editor to load
   await expect(page.locator(".ec-tree-btn", { hasText: "Page" })).toBeVisible();
@@ -21,9 +26,9 @@ test("build feature grid", async ({ page }) => {
   // Select the Feature Section again
   await page.locator(".ec-tree-btn", { hasText: "Feature Section" }).click();
 
-  // Add a Frame for the grid
+  // Add a Frame for the grid (name must not collide with showcase "Feature grid" / hm-feat-grid)
   await page.locator(".ec-props-action-btn", { hasText: "Frame" }).click();
-  await page.getByLabel("Layer Name").fill("Feature Grid");
+  await page.getByLabel("Layer Name").fill("E2E Feature Grid");
   
   // Change layout to Grid
   await page.locator(".ec-tab-segment-btn", { hasText: "Grid" }).click();
@@ -31,7 +36,7 @@ test("build feature grid", async ({ page }) => {
   // Add 3 feature cards
   for (let i = 1; i <= 3; i++) {
     // Select the grid
-    await page.locator(".ec-tree-btn", { hasText: "Feature Grid" }).click();
+    await page.locator(".ec-tree-btn", { hasText: "E2E Feature Grid" }).click();
     
     // Add a Frame for the feature card
     await page.locator(".ec-props-action-btn", { hasText: "Frame" }).click();

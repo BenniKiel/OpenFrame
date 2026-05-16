@@ -92,7 +92,7 @@ const TEXT_SIZE_SCALE_OPTIONS: TextSizeScale[] = ["sm", "base", "lg", "xl"];
 const HEADING_SIZE_SCALE_OPTIONS: HeadingSizeScale[] = ["sm", "base", "lg", "xl", "2xl", "3xl"];
 const LEADING_OPTIONS: LeadingToken[] = ["normal", "snug", "relaxed", "loose"];
 const TRACKING_OPTIONS: TrackingToken[] = ["normal", "tight", "wide"];
-const FRAME_SURFACE_OPTIONS: FrameSurface[] = ["default", "muted", "transparent", "inverse", "accent"];
+const FRAME_SURFACE_OPTIONS: FrameSurface[] = ["default", "muted", "transparent", "inverse", "accent", "glass"];
 const EXPLICIT_SIZE_UNITS: SizeUnit[] = ["auto", "px", "pct", "vw", "vh"];
 const MIN_HEIGHT_UNITS: Exclude<SizeUnit, "auto">[] = ["px", "pct", "vw", "vh"];
 const IMAGE_DIM_UNITS: ImageDimensionUnit[] = ["px", "pct", "vw", "vh"];
@@ -527,6 +527,20 @@ function TreeDropIndicator({
   );
 }
 
+/** Parents that accept the same structural children as built-in blocks (see `editor-store` `addChildTo`). */
+function isBlockInsertParent(node: PageNode | null): node is PageNode {
+  if (!node) {
+    return false;
+  }
+  return (
+    node.type === "container" ||
+    node.type === "frame" ||
+    node.type === "section" ||
+    node.type === "split" ||
+    node.type === "card"
+  );
+}
+
 const ADD_BLOCK_KINDS: EditorChildKind[] = [
   "heading",
   "text",
@@ -569,44 +583,25 @@ function AddBlockButtonGrid({
   nodeId: string;
   addChildTo: (parentId: string, kind: EditorChildKind, options?: { selectNew?: boolean }) => void;
 }) {
-  const customComponents = listCustomComponents();
   return (
     <div className="mt-1">
       <p className="ec-props-hint mb-2 text-[11px]">Tipp: Shift+Click fuegt hinzu und behaelt den Parent ausgewaehlt.</p>
       <div className="grid grid-cols-2 gap-2">
-      {ADD_BLOCK_KINDS.map((kind) => (
-        <button
-          key={kind}
-          type="button"
-          className="ec-props-action-btn w-full text-[12px]"
-          onClick={(e) => addChildTo(nodeId, kind, { selectNew: !e.shiftKey })}
-        >
-          {ADD_BLOCK_LABEL[kind]}
-        </button>
-      ))}
+        {ADD_BLOCK_KINDS.map((kind) => (
+          <button
+            key={kind}
+            type="button"
+            className="ec-props-action-btn w-full text-[12px]"
+            onClick={(e) => addChildTo(nodeId, kind, { selectNew: !e.shiftKey })}
+          >
+            {ADD_BLOCK_LABEL[kind]}
+          </button>
+        ))}
       </div>
-      
-      {customComponents.length > 0 && (
-        <>
-          <div className="mt-4 mb-2 flex items-center gap-2">
-            <h4 className="text-[11px] font-semibold text-zinc-900 uppercase tracking-wider">Code Components</h4>
-            <div className="h-px flex-1 bg-zinc-200"></div>
-          </div>
-          <div className="grid grid-cols-2 gap-2">
-            {customComponents.map((manifest) => (
-              <button
-                key={manifest.name}
-                type="button"
-                className="ec-props-action-btn w-full text-[12px] border-indigo-200 bg-indigo-50 text-indigo-900 hover:bg-indigo-100"
-                title={manifest.description}
-                onClick={(e) => addChildTo(nodeId, manifest.name, { selectNew: !e.shiftKey })}
-              >
-                {manifest.displayName}
-              </button>
-            ))}
-          </div>
-        </>
-      )}
+      <p className="ec-props-hint mt-3 text-[11px] leading-relaxed">
+        Code components from <span className="font-mono">openframe/components/</span> live in the{" "}
+        <span className="font-medium">Assets</span> tab.
+      </p>
     </div>
   );
 }
@@ -3280,9 +3275,12 @@ export function EditorApp({ initialSlug }: { initialSlug: string }) {
   const canMoveSelectedNodeUp = useEditorStore((s) => s.canMoveSelectedNode("up"));
   const canMoveSelectedNodeDown = useEditorStore((s) => s.canMoveSelectedNode("down"));
   const removeSelectedNode = useEditorStore((s) => s.removeSelectedNode);
+  const addChildTo = useEditorStore((s) => s.addChildTo);
 
   const [leftTab, setLeftTab] = useState<LeftTab>("layers");
   const [leftSearch, setLeftSearch] = useState("");
+  /** Bumps after `loadCustomComponentManifests` so lists re-render (registry is module-global). */
+  const [customRegistryTick, setCustomRegistryTick] = useState(0);
   const [collapsedLayerIds, setCollapsedLayerIds] = useState<Set<string>>(() => new Set());
   const [pageSlugs, setPageSlugs] = useState<string[]>([]);
   const [pageListError, setPageListError] = useState<string | null>(null);
@@ -3346,7 +3344,9 @@ export function EditorApp({ initialSlug }: { initialSlug: string }) {
 
   useEffect(() => {
     void fetchPageSlugs();
-    void loadCustomComponentManifests();
+    void loadCustomComponentManifests().then(() => {
+      setCustomRegistryTick((t) => t + 1);
+    });
   }, [fetchPageSlugs, previewNonce, slug]);
 
   const displaySlugs = useMemo(() => {
@@ -3356,6 +3356,29 @@ export function EditorApp({ initialSlug }: { initialSlug: string }) {
     }
     return [...set].sort((a, b) => a.localeCompare(b));
   }, [pageSlugs, slug]);
+
+  const selectedInsertParent = useMemo(() => {
+    if (!document || !selectedNodeId) {
+      return null;
+    }
+    return findNodeById(document.root, selectedNodeId);
+  }, [document, selectedNodeId]);
+
+  const canInsertBlocksUnderSelection = isBlockInsertParent(selectedInsertParent);
+
+  const filteredAssetCustomComponents = useMemo(() => {
+    const all = listCustomComponents();
+    const q = leftSearch.trim().toLowerCase();
+    if (leftTab !== "assets" || !q) {
+      return all;
+    }
+    return all.filter(
+      (m) =>
+        m.name.toLowerCase().includes(q) ||
+        m.displayName.toLowerCase().includes(q) ||
+        (typeof m.description === "string" && m.description.toLowerCase().includes(q)),
+    );
+  }, [customRegistryTick, leftTab, leftSearch]);
 
   const trySwitchPage = useCallback(
     (nextSlug: string): boolean => {
@@ -3431,12 +3454,15 @@ export function EditorApp({ initialSlug }: { initialSlug: string }) {
     if (!document) {
       return null;
     }
+    if (leftTab !== "layers") {
+      return document.root;
+    }
     const q = leftSearch.trim();
     if (!q) {
       return document.root;
     }
     return filterPageNodeTree(document.root, q);
-  }, [document, leftSearch]);
+  }, [document, leftSearch, leftTab]);
   const visibleTreeRows = useMemo(() => {
     if (!layersTreeRoot) {
       return [] as TreeDndRow[];
@@ -4256,11 +4282,23 @@ export function EditorApp({ initialSlug }: { initialSlug: string }) {
               <input
                 type="search"
                 className="ec-search-input min-w-0 flex-1 bg-transparent text-[13px] outline-none"
-                placeholder={leftTab === "layers" ? "Search layers…" : "Search…"}
+                placeholder={
+                  leftTab === "layers"
+                    ? "Search layers…"
+                    : leftTab === "assets"
+                      ? "Search code components…"
+                      : "Search…"
+                }
                 value={leftSearch}
                 onChange={(e) => setLeftSearch(e.target.value)}
-                disabled={leftTab !== "layers"}
-                aria-label={leftTab === "layers" ? "Search layers" : "Search (switch to Layers to filter)"}
+                disabled={leftTab !== "layers" && leftTab !== "assets"}
+                aria-label={
+                  leftTab === "layers"
+                    ? "Search layers"
+                    : leftTab === "assets"
+                      ? "Search code components"
+                      : "Search (switch to Layers or Assets)"
+                }
               />
             </div>
           </div>
@@ -4487,18 +4525,86 @@ export function EditorApp({ initialSlug }: { initialSlug: string }) {
             ) : null}
 
             {leftTab === "assets" ? (
-              <div className="ec-library-card rounded-lg p-4">
-                <p className="ec-library-title text-[13px] font-medium">Components & presets</p>
-                <p className="ec-library-hint mt-2 text-[12px] leading-relaxed">
-                  Layer presets (built-in and your saved subtrees). Choose where to insert relative to the selected layer.
-                </p>
-                <button
-                  type="button"
-                  className="ec-btn-primary mt-4 w-full rounded-md px-3 py-2 text-[13px] font-medium transition-colors"
-                  onClick={() => setPresetPickerOpen(true)}
-                >
-                  Browse presets…
-                </button>
+              <div className="space-y-4">
+                <div className="ec-library-card rounded-lg p-4">
+                  <p className="ec-library-title text-[13px] font-medium">Code components</p>
+                  <p className="ec-library-hint mt-2 text-[12px] leading-relaxed">
+                    React blocks from <span className="font-mono">openframe/components/</span>. Select a layer that accepts
+                    children (page root, frame, section, split, or card) in the{" "}
+                    <span className="font-medium">Layers</span> tab, then insert here. Shift+Click keeps the parent
+                    selected for batch add.
+                  </p>
+                  {!document ? (
+                    <p className="ec-text-muted mt-3 text-[12px]">Load a page to use code components.</p>
+                  ) : listCustomComponents().length === 0 ? (
+                    <p className="ec-text-muted mt-3 text-[12px] leading-relaxed">
+                      No manifests found. Add folders under openframe/components/ with component.manifest.json.
+                    </p>
+                  ) : (
+                    <>
+                      {!selectedNodeId ? (
+                        <p className="ec-text-muted mt-3 text-[12px]">
+                          Select a layer in the tree as the insert parent.
+                        </p>
+                      ) : null}
+                      {selectedNodeId && !canInsertBlocksUnderSelection ? (
+                        <p className="ec-text-muted mt-3 text-[12px]">
+                          Selected type{" "}
+                          <span className="font-mono">
+                            {(selectedInsertParent as PageNode | null)?.type ?? "—"}
+                          </span>{" "}
+                          cannot hold block children. Choose a container, frame, section, split, or card.
+                        </p>
+                      ) : null}
+                      {filteredAssetCustomComponents.length === 0 ? (
+                        <p className="ec-text-muted mt-3 text-[12px]">No components match your search.</p>
+                      ) : (
+                        <ul className="mt-3 grid list-none grid-cols-1 gap-2 p-0">
+                          {filteredAssetCustomComponents.map((manifest) => {
+                            const canAdd =
+                              Boolean(selectedNodeId) && canInsertBlocksUnderSelection && Boolean(document);
+                            return (
+                              <li key={manifest.name}>
+                                <button
+                                  type="button"
+                                  disabled={!canAdd}
+                                  title={manifest.description ?? manifest.name}
+                                  className="ec-props-action-btn flex w-full flex-col items-stretch gap-0.5 border border-indigo-200/80 bg-indigo-50/90 px-3 py-2 text-left text-[12px] text-indigo-950 transition-colors hover:bg-indigo-100/90 disabled:cursor-not-allowed disabled:opacity-40 dark:border-indigo-500/30 dark:bg-indigo-950/40 dark:text-indigo-100 dark:hover:bg-indigo-900/50"
+                                  onClick={(e) => {
+                                    if (!selectedNodeId || !canInsertBlocksUnderSelection) {
+                                      return;
+                                    }
+                                    addChildTo(selectedNodeId, manifest.name, { selectNew: !e.shiftKey });
+                                  }}
+                                >
+                                  <span className="font-medium">{manifest.displayName}</span>
+                                  <span className="font-mono text-[10px] text-indigo-800/80 dark:text-indigo-200/80">
+                                    {manifest.name}
+                                  </span>
+                                </button>
+                              </li>
+                            );
+                          })}
+                        </ul>
+                      )}
+                    </>
+                  )}
+                </div>
+
+                <div className="ec-library-card rounded-lg p-4">
+                  <p className="ec-library-title text-[13px] font-medium">Layer presets</p>
+                  <p className="ec-library-hint mt-2 text-[12px] leading-relaxed">
+                    Built-in templates and subtrees you saved from the layer tree. Inserts relative to the current
+                    selection.
+                  </p>
+                  <button
+                    type="button"
+                    className="ec-btn-primary mt-4 w-full rounded-md px-3 py-2 text-[13px] font-medium transition-colors"
+                    onClick={() => setPresetPickerOpen(true)}
+                  >
+                    Browse presets…
+                  </button>
+                </div>
               </div>
             ) : null}
           </div>

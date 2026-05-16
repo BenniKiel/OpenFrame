@@ -1,7 +1,12 @@
+import { randomBytes } from "node:crypto";
+
 import { test, expect } from "@playwright/test";
 
+/** Fresh slug so parallel e2e runs do not mutate the same SQLite row as `home`. */
+const editorSlug = `e2eland${randomBytes(4).toString("hex")}`;
+
 test("build landing page", async ({ page }) => {
-  await page.goto("/admin/editor?slug=home");
+  await page.goto(`/admin/editor?slug=${encodeURIComponent(editorSlug)}`);
 
   // Wait for editor to load
   await expect(page.locator(".ec-tree-btn", { hasText: "Page" })).toBeVisible();

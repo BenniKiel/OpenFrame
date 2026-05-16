@@ -1,0 +1,1111 @@
+{
+  "version": 1,
+  "root": {
+    "id": "root",
+    "type": "container",
+    "name": "Page",
+    "props": {
+      "surface": "default"
+    },
+    "children": [
+      {
+        "id": "hm-sec-hero",
+        "type": "section",
+        "name": "Hero",
+        "props": {
+          "anchorId": "hero",
+          "paddingY": "none",
+          "scrollReveal": "none"
+        },
+        "children": [
+          {
+            "id": "hm-hero-band",
+            "type": "frame",
+            "name": "Hero band",
+            "props": {
+              "layoutType": "stack",
+              "direction": "vertical",
+              "wrap": false,
+              "gap": 0,
+              "padding": 0,
+              "radius": 0,
+              "widthSizeMode": "fill",
+              "heightSizeMode": "fit",
+              "align": "stretch",
+              "justify": "start",
+              "columns": 1,
+              "overflow": "hidden",
+              "surface": "transparent",
+              "fill": {
+                "type": "linear",
+                "angle": 160,
+                "stops": [
+                  {
+                    "color": "#f0f4ff",
+                    "position": 0
+                  },
+                  {
+                    "color": "#dde5fd",
+                    "position": 30
+                  },
+                  {
+                    "color": "#ede9fe",
+                    "position": 62
+                  },
+                  {
+                    "color": "#fdf4ff",
+                    "position": 88
+                  },
+                  {
+                    "color": "#fff7f0",
+                    "position": 100
+                  }
+                ]
+              }
+            },
+            "children": [
+              {
+                "id": "hm-nav-shell",
+                "type": "frame",
+                "name": "Nav shell",
+                "props": {
+                  "layoutType": "stack",
+                  "direction": "vertical",
+                  "wrap": false,
+                  "gap": 0,
+                  "padding": 16,
+                  "radius": 0,
+                  "widthSizeMode": "fill",
+                  "heightSizeMode": "fit",
+                  "align": "stretch",
+                  "justify": "start",
+                  "columns": 1,
+                  "surface": "transparent",
+                  "maxWidthPx": 1152,
+                  "when": {
+                    "sm": {
+                      "padding": 20
+                    },
+                    "md": {
+                      "padding": 24
+                    }
+                  }
+                },
+                "children": [
+                  {
+                    "id": "hm-nav",
+                    "type": "nav-header",
+                    "name": "Site header",
+                    "props": {
+                      "logoLabel": "OpenFrame",
+                      "logoHref": "/",
+                      "surface": "glass",
+                      "links": [
+                        {
+                          "label": "Features",
+                          "href": "#highlights"
+                        },
+                        {
+                          "label": "Workflow",
+                          "href": "#workflow"
+                        },
+                        {
+                          "label": "Studio",
+                          "href": "/admin/editor?slug=home"
+                        }
+                      ],
+                      "ctaLabel": "Open studio",
+                      "ctaHref": "/admin/editor?slug=home"
+                    },
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "id": "hm-hero-stage",
+                "type": "frame",
+                "name": "Hero stage",
+                "props": {
+                  "layoutType": "stack",
+                  "direction": "vertical",
+                  "wrap": false,
+                  "gap": 0,
+                  "padding": 0,
+                  "radius": 0,
+                  "widthSizeMode": "fill",
+                  "heightSizeMode": "fit",
+                  "minHeightValue": 82,
+                  "minHeightUnit": "vh",
+                  "align": "center",
+                  "justify": "center",
+                  "columns": 2,
+                  "overflow": "hidden",
+                  "surface": "transparent"
+                },
+                "children": [
+                  {
+                    "id": "hm-orb-ne",
+                    "type": "frame",
+                    "name": "Glow NE",
+                    "props": {
+                      "layoutType": "stack",
+                      "direction": "vertical",
+                      "positionMode": "absolute",
+                      "insetTop": -180,
+                      "insetRight": -120,
+                      "zIndex": 0,
+                      "pointerEvents": "none",
+                      "widthSizeMode": "fixed",
+                      "heightSizeMode": "fixed",
+                      "widthSizeValue": 600,
+                      "heightSizeValue": 600,
+                      "widthSizeUnit": "px",
+                      "heightSizeUnit": "px",
+                      "padding": 0,
+                      "radius": 999,
+                      "gap": 0,
+                      "align": "center",
+                      "justify": "center",
+                      "columns": 1,
+                      "overflow": "visible",
+                      "surface": "transparent",
+                      "fill": {
+                        "type": "radial",
+                        "shape": "circle",
+                        "stops": [
+                          {
+                            "color": "#818cf8",
+                            "position": 0
+                          },
+                          {
+                            "color": "#c084fc",
+                            "position": 40
+                          },
+                          {
+                            "color": "#f0f4ff",
+                            "position": 70
+                          },
+                          {
+                            "color": "#f0f4ff",
+                            "position": 100
+                          }
+                        ]
+                      }
+                    },
+                    "children": []
+                  },
+                  {
+                    "id": "hm-orb-sw",
+                    "type": "frame",
+                    "name": "Glow SW",
+                    "props": {
+                      "layoutType": "stack",
+                      "direction": "vertical",
+                      "positionMode": "absolute",
+                      "insetBottom": -200,
+                      "insetLeft": -120,
+                      "zIndex": 0,
+                      "pointerEvents": "none",
+                      "widthSizeMode": "fixed",
+                      "heightSizeMode": "fixed",
+                      "widthSizeValue": 540,
+                      "heightSizeValue": 540,
+                      "widthSizeUnit": "px",
+                      "heightSizeUnit": "px",
+                      "padding": 0,
+                      "radius": 999,
+                      "gap": 0,
+                      "align": "center",
+                      "justify": "center",
+                      "columns": 1,
+                      "overflow": "visible",
+                      "surface": "transparent",
+                      "fill": {
+                        "type": "radial",
+                        "shape": "ellipse",
+                        "stops": [
+                          {
+                            "color": "#38bdf8",
+                            "position": 0
+                          },
+                          {
+                            "color": "#818cf8",
+                            "position": 50
+                          },
+                          {
+                            "color": "#f0f4ff",
+                            "position": 90
+                          },
+                          {
+                            "color": "#f0f4ff",
+                            "position": 100
+                          }
+                        ]
+                      }
+                    },
+                    "children": []
+                  },
+                  {
+                    "id": "hm-hero-col",
+                    "type": "frame",
+                    "name": "Hero content",
+                    "props": {
+                      "layoutType": "stack",
+                      "direction": "vertical",
+                      "wrap": false,
+                      "gap": 28,
+                      "padding": 32,
+                      "radius": 0,
+                      "widthSizeMode": "fill",
+                      "heightSizeMode": "fit",
+                      "maxWidthPx": 760,
+                      "align": "center",
+                      "justify": "center",
+                      "columns": 1,
+                      "zIndex": 2,
+                      "surface": "transparent",
+                      "when": {
+                        "sm": {
+                          "padding": 40,
+                          "gap": 32
+                        },
+                        "md": {
+                          "padding": 56,
+                          "gap": 36
+                        }
+                      }
+                    },
+                    "children": [
+                      {
+                        "id": "hm-kicker",
+                        "type": "heading",
+                        "name": "Kicker",
+                        "props": {
+                          "text": "Schema-first · AI-ready · Zero lock-in",
+                          "level": 6,
+                          "align": "center",
+                          "tone": "accent",
+                          "tracking": "wide",
+                          "sizeScale": "sm"
+                        },
+                        "children": []
+                      },
+                      {
+                        "id": "hm-title",
+                        "type": "heading",
+                        "name": "Headline",
+                        "props": {
+                          "text": "Pages that stay designed — whatever edits them.",
+                          "level": 1,
+                          "align": "center",
+                          "sizeScale": "3xl",
+                          "leading": "snug",
+                          "tracking": "tight"
+                        },
+                        "children": []
+                      },
+                      {
+                        "id": "hm-lead",
+                        "type": "text",
+                        "name": "Lead",
+                        "props": {
+                          "text": "Build marketing pages in the OpenFrame Studio. The same validated document powers your public route and is safe for agents to modify — no component-tree drift, ever.",
+                          "as": "p",
+                          "align": "center",
+                          "tone": "muted",
+                          "leading": "relaxed",
+                          "sizeScale": "lg",
+                          "maxWidth": 580
+                        },
+                        "children": []
+                      },
+                      {
+                        "id": "hm-cta-row",
+                        "type": "frame",
+                        "name": "CTAs",
+                        "props": {
+                          "layoutType": "stack",
+                          "direction": "horizontal",
+                          "wrap": true,
+                          "gap": 12,
+                          "padding": 0,
+                          "radius": 0,
+                          "widthSizeMode": "fit",
+                          "heightSizeMode": "fit",
+                          "align": "center",
+                          "justify": "center",
+                          "columns": 2
+                        },
+                        "children": [
+                          {
+                            "id": "hm-btn-studio",
+                            "type": "button",
+                            "name": "Studio",
+                            "props": {
+                              "label": "Open studio",
+                              "href": "/admin/editor?slug=home",
+                              "variant": "primary"
+                            },
+                            "children": []
+                          },
+                          {
+                            "id": "hm-btn-gh",
+                            "type": "button",
+                            "name": "See the workflow",
+                            "props": {
+                              "label": "See the workflow",
+                              "href": "#workflow",
+                              "variant": "secondary"
+                            },
+                            "children": []
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "hm-sec-highlights",
+        "type": "section",
+        "name": "Highlights",
+        "props": {
+          "anchorId": "highlights",
+          "paddingY": "xl",
+          "scrollReveal": "fade-up"
+        },
+        "children": [
+          {
+            "id": "hm-highlights-shell",
+            "type": "frame",
+            "name": "Highlights shell",
+            "props": {
+              "layoutType": "stack",
+              "direction": "vertical",
+              "wrap": false,
+              "gap": 48,
+              "padding": 16,
+              "radius": 0,
+              "widthSizeMode": "fill",
+              "heightSizeMode": "fit",
+              "maxWidthPx": 1152,
+              "align": "stretch",
+              "justify": "start",
+              "columns": 1,
+              "surface": "transparent",
+              "when": {
+                "sm": {
+                  "padding": 20,
+                  "gap": 52
+                },
+                "md": {
+                  "padding": 24,
+                  "gap": 56
+                }
+              }
+            },
+            "children": [
+              {
+                "id": "hm-highlights-intro",
+                "type": "frame",
+                "name": "Highlights intro",
+                "props": {
+                  "layoutType": "stack",
+                  "direction": "vertical",
+                  "wrap": false,
+                  "gap": 20,
+                  "padding": 0,
+                  "radius": 0,
+                  "widthSizeMode": "fill",
+                  "heightSizeMode": "fit",
+                  "maxWidthPx": 600,
+                  "align": "center",
+                  "justify": "center",
+                  "columns": 1,
+                  "surface": "transparent"
+                },
+                "children": [
+                  {
+                    "id": "hm-highlights-h",
+                    "type": "heading",
+                    "name": "Section title",
+                    "props": {
+                      "text": "Everything in a validated document",
+                      "level": 2,
+                      "align": "center",
+                      "sizeScale": "2xl",
+                      "leading": "snug"
+                    },
+                    "children": []
+                  },
+                  {
+                    "id": "hm-highlights-sub",
+                    "type": "text",
+                    "name": "Section subtitle",
+                    "props": {
+                      "text": "One schema contracts the editor, the renderer, and CI. Every block has typed props — no raw class strings, no runtime surprises.",
+                      "as": "p",
+                      "align": "center",
+                      "tone": "muted",
+                      "leading": "relaxed",
+                      "sizeScale": "lg"
+                    },
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "id": "hm-feat-grid",
+                "type": "frame",
+                "name": "Feature grid",
+                "props": {
+                  "layoutType": "grid",
+                  "direction": "vertical",
+                  "wrap": false,
+                  "gap": 24,
+                  "padding": 0,
+                  "radius": 0,
+                  "widthSizeMode": "fill",
+                  "heightSizeMode": "fit",
+                  "align": "stretch",
+                  "justify": "start",
+                  "columns": 1,
+                  "surface": "transparent",
+                  "when": {
+                    "md": {
+                      "columns": 2,
+                      "gap": 24
+                    },
+                    "lg": {
+                      "columns": 3,
+                      "gap": 28
+                    }
+                  }
+                },
+                "children": [
+                  {
+                    "id": "hm-card-1",
+                    "type": "card",
+                    "name": "Card",
+                    "props": {
+                      "surface": "default",
+                      "padding": 32,
+                      "radius": 16,
+                      "interaction": "lift"
+                    },
+                    "children": [
+                      {
+                        "id": "hm-card-1-stack",
+                        "type": "frame",
+                        "name": "Card stack",
+                        "props": {
+                          "layoutType": "stack",
+                          "direction": "vertical",
+                          "wrap": false,
+                          "gap": 14,
+                          "padding": 0,
+                          "radius": 0,
+                          "widthSizeMode": "fill",
+                          "heightSizeMode": "fit",
+                          "align": "stretch",
+                          "justify": "start",
+                          "columns": 1,
+                          "surface": "transparent"
+                        },
+                        "children": [
+                          {
+                            "id": "hm-c1-h",
+                            "type": "heading",
+                            "name": "Title",
+                            "props": {
+                              "text": "Contract-first saves",
+                              "level": 4,
+                              "align": "start"
+                            },
+                            "children": []
+                          },
+                          {
+                            "id": "hm-c1-t",
+                            "type": "text",
+                            "name": "Body",
+                            "props": {
+                              "text": "Every Save hits the same Zod boundary as your API and preview — schema drift surfaces before it reaches production.",
+                              "as": "p",
+                              "tone": "muted",
+                              "leading": "relaxed"
+                            },
+                            "children": []
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "id": "hm-card-2",
+                    "type": "card",
+                    "name": "Card",
+                    "props": {
+                      "surface": "muted",
+                      "padding": 32,
+                      "radius": 16,
+                      "interaction": "lift"
+                    },
+                    "children": [
+                      {
+                        "id": "hm-card-2-stack",
+                        "type": "frame",
+                        "name": "Card stack",
+                        "props": {
+                          "layoutType": "stack",
+                          "direction": "vertical",
+                          "wrap": false,
+                          "gap": 14,
+                          "padding": 0,
+                          "radius": 0,
+                          "widthSizeMode": "fill",
+                          "heightSizeMode": "fit",
+                          "align": "stretch",
+                          "justify": "start",
+                          "columns": 1,
+                          "surface": "transparent"
+                        },
+                        "children": [
+                          {
+                            "id": "hm-c2-h",
+                            "type": "heading",
+                            "name": "Title",
+                            "props": {
+                              "text": "Gradient-native design",
+                              "level": 4,
+                              "align": "start"
+                            },
+                            "children": []
+                          },
+                          {
+                            "id": "hm-c2-t",
+                            "type": "text",
+                            "name": "Body",
+                            "props": {
+                              "text": "Linear, radial, and orb fills render as real CSS backgrounds — declared once in JSON, never re-implemented in markup.",
+                              "as": "p",
+                              "tone": "muted",
+                              "leading": "relaxed"
+                            },
+                            "children": []
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "id": "hm-card-3",
+                    "type": "card",
+                    "name": "Card",
+                    "props": {
+                      "surface": "default",
+                      "padding": 32,
+                      "radius": 16,
+                      "interaction": "lift"
+                    },
+                    "children": [
+                      {
+                        "id": "hm-card-3-stack",
+                        "type": "frame",
+                        "name": "Card stack",
+                        "props": {
+                          "layoutType": "stack",
+                          "direction": "vertical",
+                          "wrap": false,
+                          "gap": 14,
+                          "padding": 0,
+                          "radius": 0,
+                          "widthSizeMode": "fill",
+                          "heightSizeMode": "fit",
+                          "align": "stretch",
+                          "justify": "start",
+                          "columns": 1,
+                          "surface": "transparent"
+                        },
+                        "children": [
+                          {
+                            "id": "hm-c3-h",
+                            "type": "heading",
+                            "name": "Title",
+                            "props": {
+                              "text": "Motion with guardrails",
+                              "level": 4,
+                              "align": "start"
+                            },
+                            "children": []
+                          },
+                          {
+                            "id": "hm-c3-t",
+                            "type": "text",
+                            "name": "Body",
+                            "props": {
+                              "text": "Scroll-reveal presets run inside the preview surface, isolated from editor chrome — safe to hand off to agents or junior devs.",
+                              "as": "p",
+                              "tone": "muted",
+                              "leading": "relaxed"
+                            },
+                            "children": []
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "hm-sec-workflow",
+        "type": "section",
+        "name": "Workflow",
+        "props": {
+          "anchorId": "workflow",
+          "paddingY": "xl",
+          "scrollReveal": "fade-up"
+        },
+        "children": [
+          {
+            "id": "hm-workflow-shell",
+            "type": "frame",
+            "name": "Workflow shell",
+            "props": {
+              "layoutType": "stack",
+              "direction": "vertical",
+              "wrap": false,
+              "gap": 0,
+              "padding": 16,
+              "radius": 0,
+              "widthSizeMode": "fill",
+              "heightSizeMode": "fit",
+              "maxWidthPx": 1152,
+              "align": "stretch",
+              "justify": "start",
+              "columns": 1,
+              "surface": "transparent",
+              "when": {
+                "sm": {
+                  "padding": 20
+                },
+                "md": {
+                  "padding": 24
+                }
+              }
+            },
+            "children": [
+              {
+                "id": "hm-split",
+                "type": "split",
+                "name": "Split",
+                "props": {
+                  "gap": 40,
+                  "align": "stretch",
+                  "ratio": "startWide"
+                },
+                "children": [
+                  {
+                    "id": "hm-split-visual",
+                    "type": "frame",
+                    "name": "Visual panel",
+                    "props": {
+                      "layoutType": "stack",
+                      "direction": "vertical",
+                      "wrap": false,
+                      "gap": 20,
+                      "padding": 44,
+                      "radius": 20,
+                      "widthSizeMode": "fill",
+                      "heightSizeMode": "fit",
+                      "minHeightValue": 320,
+                      "minHeightUnit": "px",
+                      "align": "start",
+                      "justify": "end",
+                      "columns": 1,
+                      "surface": "inverse",
+                      "overflow": "hidden",
+                      "fill": {
+                        "type": "linear",
+                        "angle": 140,
+                        "stops": [
+                          {
+                            "color": "#0f0e2a",
+                            "position": 0
+                          },
+                          {
+                            "color": "#3b0764",
+                            "position": 45
+                          },
+                          {
+                            "color": "#082f49",
+                            "position": 100
+                          }
+                        ]
+                      }
+                    },
+                    "children": [
+                      {
+                        "id": "hm-split-orb",
+                        "type": "frame",
+                        "name": "Panel glow",
+                        "props": {
+                          "layoutType": "stack",
+                          "direction": "vertical",
+                          "positionMode": "absolute",
+                          "insetTop": -100,
+                          "insetRight": -80,
+                          "zIndex": 0,
+                          "pointerEvents": "none",
+                          "widthSizeMode": "fixed",
+                          "heightSizeMode": "fixed",
+                          "widthSizeValue": 360,
+                          "heightSizeValue": 360,
+                          "widthSizeUnit": "px",
+                          "heightSizeUnit": "px",
+                          "padding": 0,
+                          "radius": 999,
+                          "gap": 0,
+                          "align": "center",
+                          "justify": "center",
+                          "columns": 1,
+                          "overflow": "visible",
+                          "surface": "transparent",
+                          "fill": {
+                            "type": "radial",
+                            "shape": "circle",
+                            "stops": [
+                              {
+                                "color": "#7c3aed",
+                                "position": 0
+                              },
+                              {
+                                "color": "#0ea5e9",
+                                "position": 55
+                              },
+                              {
+                                "color": "#0f0e2a",
+                                "position": 90
+                              },
+                              {
+                                "color": "#0f0e2a",
+                                "position": 100
+                              }
+                            ]
+                          }
+                        },
+                        "children": []
+                      },
+                      {
+                        "id": "hm-split-h",
+                        "type": "heading",
+                        "name": "Panel title",
+                        "props": {
+                          "text": "Design in the studio. Publish to the same tree.",
+                          "level": 3,
+                          "align": "start",
+                          "tone": "inverse",
+                          "sizeScale": "xl",
+                          "leading": "snug"
+                        },
+                        "children": []
+                      },
+                      {
+                        "id": "hm-split-t",
+                        "type": "text",
+                        "name": "Panel copy",
+                        "props": {
+                          "text": "One document model, one renderer — whether a designer clicks Save or an agent rewrites the JSON.",
+                          "as": "p",
+                          "align": "start",
+                          "tone": "inverse",
+                          "leading": "relaxed"
+                        },
+                        "children": []
+                      }
+                    ]
+                  },
+                  {
+                    "id": "hm-split-copy",
+                    "type": "frame",
+                    "name": "Bullets",
+                    "props": {
+                      "layoutType": "stack",
+                      "direction": "vertical",
+                      "wrap": false,
+                      "gap": 20,
+                      "padding": 16,
+                      "radius": 0,
+                      "widthSizeMode": "fill",
+                      "heightSizeMode": "fit",
+                      "align": "start",
+                      "justify": "center",
+                      "columns": 1,
+                      "surface": "transparent",
+                      "when": {
+                        "md": {
+                          "padding": 8
+                        }
+                      }
+                    },
+                    "children": [
+                      {
+                        "id": "hm-b1",
+                        "type": "text",
+                        "name": "Bullet",
+                        "props": {
+                          "text": "→ Edit structure, props, and gradients in the Studio — Save writes validated page JSON to the database.",
+                          "as": "p",
+                          "tone": "default",
+                          "leading": "relaxed"
+                        },
+                        "children": []
+                      },
+                      {
+                        "id": "hm-b2",
+                        "type": "text",
+                        "name": "Bullet",
+                        "props": {
+                          "text": "→ Public routes use a single renderer for the canonical tree — no duplicated component logic, no version skew.",
+                          "as": "p",
+                          "tone": "default",
+                          "leading": "relaxed"
+                        },
+                        "children": []
+                      },
+                      {
+                        "id": "hm-b3",
+                        "type": "text",
+                        "name": "Bullet",
+                        "props": {
+                          "text": "→ Agents can safely edit page JSON — the Zod boundary and CI visual reports catch structural mistakes before merge.",
+                          "as": "p",
+                          "tone": "default",
+                          "leading": "relaxed"
+                        },
+                        "children": []
+                      },
+                      {
+                        "id": "hm-btn-workflow-cta",
+                        "type": "button",
+                        "name": "Workflow CTA",
+                        "props": {
+                          "label": "Try it in the studio",
+                          "href": "/admin/editor?slug=home",
+                          "variant": "primary"
+                        },
+                        "children": []
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "hm-sec-footer",
+        "type": "section",
+        "name": "Footer",
+        "props": {
+          "anchorId": "footer",
+          "paddingY": "xl",
+          "scrollReveal": "none"
+        },
+        "children": [
+          {
+            "id": "hm-footer-shell",
+            "type": "frame",
+            "name": "Footer shell",
+            "props": {
+              "layoutType": "stack",
+              "direction": "vertical",
+              "wrap": false,
+              "gap": 0,
+              "padding": 16,
+              "radius": 0,
+              "widthSizeMode": "fill",
+              "heightSizeMode": "fit",
+              "maxWidthPx": 1152,
+              "align": "stretch",
+              "justify": "start",
+              "columns": 1,
+              "surface": "transparent",
+              "when": {
+                "sm": {
+                  "padding": 20
+                },
+                "md": {
+                  "padding": 24
+                }
+              }
+            },
+            "children": [
+              {
+                "id": "hm-footer-frame",
+                "type": "frame",
+                "name": "Footer inner",
+                "props": {
+                  "layoutType": "stack",
+                  "direction": "vertical",
+                  "gap": 28,
+                  "padding": 56,
+                  "radius": 20,
+                  "widthSizeMode": "fill",
+                  "heightSizeMode": "fit",
+                  "align": "center",
+                  "justify": "center",
+                  "columns": 1,
+                  "overflow": "hidden",
+                  "surface": "inverse",
+                  "fill": {
+                    "type": "linear",
+                    "angle": 145,
+                    "stops": [
+                      {
+                        "color": "#0f0e2a",
+                        "position": 0
+                      },
+                      {
+                        "color": "#1e1a45",
+                        "position": 50
+                      },
+                      {
+                        "color": "#0c1a35",
+                        "position": 100
+                      }
+                    ]
+                  }
+                },
+                "children": [
+                  {
+                    "id": "hm-footer-orb",
+                    "type": "frame",
+                    "name": "Footer glow",
+                    "props": {
+                      "layoutType": "stack",
+                      "direction": "vertical",
+                      "positionMode": "absolute",
+                      "insetTop": -160,
+                      "insetRight": -80,
+                      "zIndex": 0,
+                      "pointerEvents": "none",
+                      "widthSizeMode": "fixed",
+                      "heightSizeMode": "fixed",
+                      "widthSizeValue": 480,
+                      "heightSizeValue": 480,
+                      "widthSizeUnit": "px",
+                      "heightSizeUnit": "px",
+                      "padding": 0,
+                      "radius": 999,
+                      "gap": 0,
+                      "align": "center",
+                      "justify": "center",
+                      "columns": 1,
+                      "overflow": "visible",
+                      "surface": "transparent",
+                      "fill": {
+                        "type": "radial",
+                        "shape": "circle",
+                        "stops": [
+                          {
+                            "color": "#6366f1",
+                            "position": 0
+                          },
+                          {
+                            "color": "#a855f7",
+                            "position": 45
+                          },
+                          {
+                            "color": "#0f0e2a",
+                            "position": 80
+                          },
+                          {
+                            "color": "#0f0e2a",
+                            "position": 100
+                          }
+                        ]
+                      }
+                    },
+                    "children": []
+                  },
+                  {
+                    "id": "hm-footer-cta-h",
+                    "type": "heading",
+                    "name": "Footer CTA heading",
+                    "props": {
+                      "text": "Start building structured pages today.",
+                      "level": 2,
+                      "align": "center",
+                      "tone": "inverse",
+                      "sizeScale": "2xl",
+                      "leading": "snug"
+                    },
+                    "children": []
+                  },
+                  {
+                    "id": "hm-footer-cta-t",
+                    "type": "text",
+                    "name": "Footer CTA subtext",
+                    "props": {
+                      "text": "Open the Studio and edit this page live — every change you make writes validated JSON to the same source of truth your public route reads.",
+                      "as": "p",
+                      "align": "center",
+                      "tone": "inverse",
+                      "leading": "relaxed",
+                      "sizeScale": "lg",
+                      "maxWidth": 520
+                    },
+                    "children": []
+                  },
+                  {
+                    "id": "hm-footer-btn",
+                    "type": "button",
+                    "name": "Footer CTA button",
+                    "props": {
+                      "label": "Open studio",
+                      "href": "/admin/editor?slug=home",
+                      "variant": "inverse"
+                    },
+                    "children": []
+                  },
+                  {
+                    "id": "hm-footer-text",
+                    "type": "text",
+                    "name": "Footer attribution",
+                    "props": {
+                      "text": "OpenFrame — the structured page builder. Edit this page in the Studio at any time.",
+                      "as": "p",
+                      "align": "center",
+                      "tone": "muted",
+                      "leading": "relaxed",
+                      "sizeScale": "sm"
+                    },
+                    "children": []
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "theme": {
+    "radius": "xl",
+    "colorScheme": "light",
+    "typographyScale": "large"
+  },
+  "meta": {
+    "title": "OpenFrame — Pages you can validate, ship, and hand to agents",
+    "description": "One canonical document powers the editor, the public site, and CI. Layout, motion, and content stay inside a schema tools can edit safely."
+  }
+}

@@ -12,7 +12,7 @@ export type NormalizedLogoCloudProps = {
   logos: LogoCloudItem[];
 };
 
-const SURFACES: readonly FrameSurface[] = ["default", "muted", "transparent", "inverse", "accent"];
+const SURFACES: readonly FrameSurface[] = ["default", "muted", "transparent", "inverse", "accent", "glass"];
 export const LOGO_CLOUD_MAX_ITEMS = 24;
 const MAX_NAME_LEN = 120;
 const MAX_SRC_LEN = 2048;

@@ -141,7 +141,10 @@ export function HeadingBlock({ node }: BlockProps) {
     TRACKING_CLASS[p.tracking],
     ALIGN_CLASS[p.align],
     "max-w-full text-balance",
-  ].join(" ");
+    p.align === "center" ? "mx-auto" : "",
+  ]
+    .filter(Boolean)
+    .join(" ");
   return (
     <>
       {responsiveCss ? <style>{responsiveCss}</style> : null}

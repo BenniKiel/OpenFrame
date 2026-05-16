@@ -10,7 +10,7 @@ export type NormalizedCardProps = {
 
 export type CardInteraction = "none" | "lift" | "glow";
 
-const SURFACES: readonly FrameSurface[] = ["default", "muted", "transparent", "inverse", "accent"];
+const SURFACES: readonly FrameSurface[] = ["default", "muted", "transparent", "inverse", "accent", "glass"];
 const INTERACTIONS: readonly CardInteraction[] = ["none", "lift", "glow"];
 
 function readSurface(v: unknown): FrameSurface {

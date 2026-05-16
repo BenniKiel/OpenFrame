@@ -38,8 +38,10 @@ Rationale:
 - **Storage (MVP):** SQLite (single-file DB) via Drizzle ORM
 - **File contract for AI tools:** `/openframe/` workspace contract with:
   - `openframe/examples/openframe.project.json` (project metadata template)
-  - `openframe/examples/*.page.json` (page trees; **golden:** `landing-mvp.page.json`)
+  - `openframe/examples/*.page.json` (page trees; **golden:** `landing-mvp.page.json`, plus `home-showcase.page.json`, etc. — see `openframe/examples/README.md`)
   - `openframe/openframe.schema.json` (JSON Schema snapshot of `OpenframePageDocument`; sync with `page-document.ts`)
+  - **Stufe A — validate all golden page files:** `pnpm validate:examples` (Zod issues per file; `--json` for tooling). Same gate is covered by `pnpm test` (`example-pages-golden.test.ts`).
+  - **Stufe B + C — DOM report + screenshot for agents:** `pnpm report:page-visual` writes under `artifacts/page-reports/` (see `openframe/examples/README.md`; env: `PAGE_SLUG`, **`PAGE_SLUGS`**, **`PAGE_FOCUS_NODE_IDS`**, `SKIP_SCREENSHOT`, **`SKIP_FULL_PAGE_SCREENSHOT`**, **`PAGE_REPORT_NODE_IDS`**, **`PAGE_REPORT_COMPACT`**). **`pnpm report:page-visual:ci`** is the screenshot-free check used in **`pnpm ci:check`**.
 - **Preview rendering:** React renderer consumes canonical JSON, not arbitrary TSX
 - **External AI model providers:** not hard-wired in MVP; AI tools operate through documented file/schema contract
 

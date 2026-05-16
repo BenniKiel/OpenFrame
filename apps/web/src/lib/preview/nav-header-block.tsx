@@ -15,7 +15,7 @@ export type NormalizedNavHeaderProps = {
   ctaHref: string;
 };
 
-const SURFACES: readonly FrameSurface[] = ["default", "muted", "transparent", "inverse", "accent"];
+const SURFACES: readonly FrameSurface[] = ["default", "muted", "transparent", "inverse", "accent", "glass"];
 export const NAV_HEADER_MAX_LINKS = 8;
 const MAX_TEXT = 120;
 const MAX_HREF = 2048;

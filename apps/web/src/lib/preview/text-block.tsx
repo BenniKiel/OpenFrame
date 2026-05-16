@@ -135,6 +135,7 @@ export function TextBlock({ node }: BlockProps) {
     TRACKING_CLASS[p.tracking],
     TEXT_TONE_CLASS[p.tone],
     p.maxWidth != null ? "max-w-full" : "",
+    p.align === "center" ? "mx-auto" : "",
   ]
     .filter(Boolean)
     .join(" ");

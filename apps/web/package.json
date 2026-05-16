@@ -6,7 +6,8 @@
     "node": ">=22"
   },
   "scripts": {
-    "dev": "next dev",
+    "dev": "tsx scripts/next-dev-with-home-sync.ts",
+    "dev:plain": "next dev",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
@@ -14,10 +15,14 @@
     "test": "vitest run --root ../.. --config ./apps/web/vitest.config.mts",
     "test:watch": "vitest --root ../.. --config ./apps/web/vitest.config.mts",
     "test:e2e": "playwright test",
+    "report:page-visual": "playwright test e2e/page-visual-report.spec.ts",
+    "report:page-visual:ci": "node scripts/page-visual-report-ci.cjs",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
     "db:push": "drizzle-kit push",
-    "db:studio": "drizzle-kit studio"
+    "db:studio": "drizzle-kit studio",
+    "validate:examples": "tsx scripts/validate-example-pages.ts",
+    "seed:home": "tsx scripts/seed-home-showcase.ts"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",
@@ -52,6 +57,7 @@
     "eslint-config-next": "16.2.4",
     "jsdom": "^29.1.1",
     "tailwindcss": "^4",
+    "tsx": "^4.21.0",
     "typescript": "^5",
     "vitest": "^4.1.5"
   }

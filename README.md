@@ -82,6 +82,18 @@ cp apps/web/.env.example apps/web/.env
 pnpm db:push
 ```
 
+### Reset `home` to the canonical showcase
+
+The public route `/` reads **`home`** from SQLite. After local experiments or tests that mutate `home`, it may **diverge** from `apps/web/src/lib/editor/home-showcase-document.ts` / `openframe/examples/home-showcase.page.json`.
+
+To **overwrite** the `home` row with the canonical showcase (destructive):
+
+```bash
+pnpm seed:home -- --force
+```
+
+Same database file as the app (`DATABASE_PATH` or default `apps/web/.data/openframe.db`). Requires `--force` or `OPENFRAME_SEED_HOME_FORCE=1` so production databases are not touched accidentally.
+
 ## Pages API (persistence MVP)
 
 After `pnpm db:push`, the Node runtime exposes:

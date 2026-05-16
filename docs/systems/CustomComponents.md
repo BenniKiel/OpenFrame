@@ -20,10 +20,10 @@ flowchart TD
     end
 
     subgraph EditorCore ["Editor Core"]
-        Registry["Client Registry\n(custom-component-registry.ts)"]
-        Picker["Block Picker UI"]
-        PropsPanel["CustomPropsPanel\n(Dynamic Forms)"]
-        Store["Editor Store"]
+      Registry["Client Registry\n(custom-component-registry.ts)"]
+      AssetsTab["Assets tab\n(insert picker)"]
+      PropsPanel["CustomPropsPanel\n(Dynamic Forms)"]
+      Store["Editor Store"]
     end
 
     subgraph PreviewRenderer ["Preview Renderer"]
@@ -37,11 +37,11 @@ flowchart TD
     
     DiscoveryAPI -- "Manifest JSON Array" --> Registry
     
-    Registry --> Picker
+    Registry --> AssetsTab
     Registry --> PropsPanel
     Registry --> ResolveBlock
     
-    Picker -->|Add Node| Store
+    AssetsTab -->|Add Node| Store
     Store --> PropsPanel
     PropsPanel -->|Update Props| Store
     Store -.->|PageDocument JSON| PreviewRenderer
@@ -103,6 +103,9 @@ export default function MyButton({ label, variant }: Props) {
 }
 ```
 
+### Step 4: Insert in the studio
+In `/admin/editor`, open the **Assets** tab. In **Layers**, select a parent that accepts block children (page root / `container`, `frame`, `section`, `split`, or `card`). Click your component in the **Code components** list to insert it (Shift+Click keeps the parent selected). Edit props in the right-hand panel via **CustomPropsPanel**.
+
 ## 4. Property Controls Reference
 
 The following control types are available for use in `propertyControls`:
@@ -136,4 +139,4 @@ You can hide controls based on other prop values using the `hidden` field:
 ## 6. Known limitations
 
 - **Tailwind JIT**: Since custom components live outside the standard `src/` directory, ensure `openframe/components/**/*.tsx` is included in your `tailwind.config.ts` content array to allow JIT styling to work.
-- **Registry Refresh**: The editor loads manifests on mount. If you add a new component folder while the editor is open, you may need to refresh the page to see it in the block picker.
+- **Registry Refresh**: The editor loads manifests on mount (and after navigation that re-runs the effect). If you add a new component folder while the editor is open, refresh the page to see it under **Assets → Code components**.

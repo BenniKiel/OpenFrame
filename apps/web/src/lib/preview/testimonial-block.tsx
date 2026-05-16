@@ -9,7 +9,7 @@ export type NormalizedTestimonialProps = {
   avatarSrc: string | null;
 };
 
-const SURFACES: readonly FrameSurface[] = ["default", "muted", "transparent", "inverse", "accent"];
+const SURFACES: readonly FrameSurface[] = ["default", "muted", "transparent", "inverse", "accent", "glass"];
 const MAX_QUOTE_LEN = 2000;
 const MAX_AUTHOR_LEN = 200;
 const MAX_ROLE_LEN = 200;

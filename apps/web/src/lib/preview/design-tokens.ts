@@ -3,7 +3,7 @@
  * Avoid storing raw class strings on `PageNode.props`.
  */
 
-export type FrameSurface = "default" | "muted" | "transparent" | "inverse" | "accent";
+export type FrameSurface = "default" | "muted" | "transparent" | "inverse" | "accent" | "glass";
 
 export type TextTone = "default" | "muted" | "inverse" | "accent";
 
@@ -26,6 +26,7 @@ export const FRAME_SURFACE_CLASS: Record<FrameSurface, string> = {
   transparent: "border border-transparent bg-transparent text-zinc-900 shadow-none ring-0",
   inverse: "border border-zinc-800 bg-zinc-900 text-zinc-50 shadow-md ring-1 ring-white/10",
   accent: "border border-sky-200/80 bg-sky-50/95 text-sky-950 shadow-sm ring-1 ring-sky-500/20",
+  glass: "border-b border-white/40 bg-white/60 backdrop-blur-md text-zinc-900 shadow-none ring-0",
 };
 
 /**
@@ -38,6 +39,7 @@ export const FRAME_SURFACE_FRAME_CHROME: Record<FrameSurface, string> = {
   transparent: "border border-transparent bg-transparent text-zinc-900 shadow-none ring-0",
   inverse: "border border-zinc-800 bg-transparent text-zinc-50 shadow-md ring-1 ring-white/10",
   accent: "border border-sky-200/80 bg-transparent text-sky-950 shadow-sm ring-1 ring-sky-500/20",
+  glass: "border-b border-white/40 bg-white/60 backdrop-blur-md text-zinc-900 shadow-none ring-0",
 };
 
 /** Root `container` shell — spacing + surface (Phase 1b). */
@@ -47,6 +49,7 @@ export const CONTAINER_SURFACE_CLASS: Record<FrameSurface, string> = {
   transparent: "bg-transparent text-zinc-950",
   inverse: "bg-zinc-950 text-zinc-50",
   accent: "bg-sky-50 text-sky-950",
+  glass: "bg-transparent text-zinc-950",
 };
 
 export const TEXT_TONE_CLASS: Record<TextTone, string> = {

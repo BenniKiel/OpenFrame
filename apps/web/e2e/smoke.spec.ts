@@ -2,7 +2,8 @@ import { expect, test } from "@playwright/test";
 
 test("home loads", async ({ page }) => {
   await page.goto("/");
-  await expect(page.getByRole("heading", { name: "OpenFrame" })).toBeVisible();
+  await expect(page.locator('[data-of-node-id="root"]')).toBeVisible();
+  await expect(page.getByRole("heading").first()).toBeVisible();
 });
 
 test("health endpoint responds", async ({ request }) => {
